@@ -4,13 +4,23 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import { ThemeProvider } from './components/theme-provider.tsx';
 import './index.css';
+import { AblyProvider } from "ably/react";
+import { nanoid } from "nanoid";
+import { Realtime } from 'ably';
+
+const client = new Realtime({
+    clientId: nanoid(),
+    key: import.meta.env.VITE_ABLY_KEY,
+});
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <BrowserRouter>
-            <ThemeProvider>
-                <App />
-            </ThemeProvider>
-        </BrowserRouter>
+        <AblyProvider client={client}>
+            <BrowserRouter>
+                <ThemeProvider>
+                    <App />
+                </ThemeProvider>
+            </BrowserRouter>
+        </AblyProvider>
     </StrictMode>,
 )
