@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export function Navbar() {
     return (
         <header className="px-4 lg:px-6 h-14 flex items-center">
-            <Link className="flex items-center justify-center" to="#">
+            <Link className="flex items-center justify-center" to="/">
                 <Music className="h-6 w-6" />
                 <span className="ml-2 text-lg font-bold">DubJam</span>
             </Link>

@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { Navbar } from './(misc)/navbar'
 import Landing from './pages/landing/landing-page'
+import About from './pages/about/about';
 
 export default function App() {
     return (
@@ -23,6 +24,6 @@ function Platform() {
     return <h1>Platform</h1>
 }
 
-function About() {
-    return <h1>About</h1>
-}
+// function About() {
+//     return <h1>About</h1>
+// }
