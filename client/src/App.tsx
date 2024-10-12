@@ -1,12 +1,27 @@
+import { Route, Routes } from 'react-router-dom'
+import { Navbar } from './(misc)/navbar'
 
-function App() {
+export default function App() {
     return (
         <>
-            <h1 className="text-3xl font-bold underline">
-                Hello world!
-            </h1>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/test" element={<Test />} />
+            </Routes>
         </>
     )
 }
 
-export default App
+function Home() {
+    return <h1>Home</h1>
+}
+
+function About() {
+    return <h1>About</h1>
+}
+
+function Test() {
+    return <h1>Test</h1>
+}
