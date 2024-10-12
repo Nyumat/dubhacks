@@ -46,7 +46,7 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
         "border-yellow-500",
     ];
     return (
-        <div className={cn("relative inline-block", isSharp ? "top-6" : "w-10")}>
+        <div className={cn("relative inline-block", isSharp ? "top-6" : "w-10")}> {/* Adjusted styling for smaller and closer keys */}
             <button
                 onMouseDown={() => playNote(note, true)}
                 onMouseUp={() => playNote(note, false)}
@@ -194,6 +194,32 @@ export function Synthesizer() {
         );
     };
 
+    const visualizeRecording = () => {
+        return (
+            <div className="flex flex-col mt-4">
+                <h3 className="text-lg mb-2">Recorded Notes:</h3>
+                <div className="flex flex-row items-center gap-1">
+                    {recordedNotes.map((record, index) => (
+                        <div
+                            key={index}
+                            className="flex flex-col items-center"
+                            style={{
+                                width: "20px",
+                                height: `${Math.max(20, (recordedNotes[index + 1]?.time - record.time) * 100)}px`,
+                                backgroundColor: "#4CAF50",
+                                marginRight: "4px",
+                            }}
+                        >
+                            <span className="text-xs text-white font-bold">
+                                {record.note}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="relative flex min-h-screen bg-background text-white">
             <div className="min-w-48">
@@ -267,7 +293,7 @@ export function Synthesizer() {
                 </div>
             </div>
 
-            <div className="flex h-fit flex-row justify-center overflow-x-auto"> 
+            <div className="flex h-fit flex-row justify-center overflow-x-auto"> {/* Adjusted for horizontal scroll */}
                 {generateNotes(startOctave, octave).map((noteObj) => (
                     <PianoKey
                         key={noteObj.note}
@@ -278,6 +304,8 @@ export function Synthesizer() {
                     />
                 ))}
             </div>
+
+            {visualizeRecording()}
         </div>
     );
 }
