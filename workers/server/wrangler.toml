@@ -4,3 +4,6 @@ name = "server"
 main = "src/index.ts"
 compatibility_date = "2024-04-23"
 compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMGY1MTY3NTUtMjY2Ni00ODE3LWJkY2YtMzllODFhZjY3NDE0IiwidGVuYW50X2lkIjoiY2YwNDM0MjcwZmZiYjg2ZGJlMDNjY2VlNTViMDg3MmE4MmNiMDQ5YTE3ZWVlMzg5OTRkNWJkN2VjYTk3OGExNiIsImludGVybmFsX3NlY3JldCI6Ijc2NWU3ZjQzLWJiMjctNGVhYy04YjY5LWJkZjk3YWU1YTFkNSJ9.n3Z-Xyz-WEOKqEO2ddyvHSl-cW18qsE37Gh8nkB4zsA"
