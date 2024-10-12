@@ -1,3 +1,4 @@
+import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router-dom";
 
 export function Navbar() {
@@ -5,6 +6,9 @@ export function Navbar() {
         <div className="bg-secondary p-4">
             <nav className="container mx-auto">
                 <ul className="flex space-x-4">
+                    <li>
+                        <ModeToggle />
+                    </li>
                     <li>
                         <Link to="/" className="text-white hover:text-gray-400">Home</Link>
                     </li>
