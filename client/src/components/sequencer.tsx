@@ -155,7 +155,7 @@ export function Sequencer({ samples, numOfSteps = 16 }: Props) {
                     <div className="flex flex-col space-y-2">
                         {trackIds.map((trackId) => (
                             <div className="flex flex-row gap-2 justify-center align-middle items-center w-full space-y-2">
-                                <p className="text-white w-full whitespace-nowrap text-right mr-2">
+                                <p className="w-full whitespace-nowrap text-right mr-2">
                                     {samples[trackId].name}
                                 </p>
                                 <div
