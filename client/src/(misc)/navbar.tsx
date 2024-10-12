@@ -37,13 +37,14 @@ export function Navbar() {
                     </nav>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <div className="w-full flex-1 md:w-auto md:flex-none">
-                        <Button variant="ghost" className="h-9 w-9 px-0 md:hidden">
-                            Join
-                        </Button>
-                    </div>
                     <nav className="flex items-center space-x-2">
                         <ModeToggle />
+                        <Button variant="outline" size="sm">
+                            <Link to="/login">Login</Link>
+                        </Button>
+                        <Button variant="outline" size="sm">
+                            <Link to="/register">Register</Link>
+                        </Button>
                         <Sheet>
                             <SheetTrigger asChild>
                                 <Button
