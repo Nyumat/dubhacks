@@ -4,8 +4,14 @@ import About from './pages/about/about';
 import Login from './pages/auth/login';
 import Register from './pages/auth/register';
 import Landing from './pages/landing/landing-page';
+import LiveCursors from './pages/liveCursors';
+import { useAbly } from "ably/react";
+import Spaces from "@ably/spaces";
 
 export default function App() {
+    const client  = useAbly();
+    const spaces = new Spaces(client);
+
     return (
         <>
             <Navbar />
@@ -15,6 +21,7 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/ably" element={<LiveCursors spaces={spaces}/>} />
                 <Route path="*" element={<h1>Not Found</h1>} />
             </Routes>
         </>
