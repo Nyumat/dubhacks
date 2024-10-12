@@ -1,74 +1,30 @@
 import { ModeToggle } from "@/components/mode-toggle";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Music } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const NavItems = ({ className = "", onClick = () => { } }) => (
-    <>
-        <li>
-            <Link to="/" className={className} onClick={onClick}>
-                Home
-            </Link>
-        </li>
-        <li>
-            <Link to="/about" className={className} onClick={onClick}>
-                About
-            </Link>
-        </li>
-        <li>
-            <Link to="/test" className={className} onClick={onClick}>
-                Test
-            </Link>
-        </li>
-    </>
-);
 
 export function Navbar() {
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
-                <div className="mr-4 flex">
-                    <Link to="/" className="mx-6 flex items-center space-x-2">
-                        <span className="font-bold text-xl">DubJam</span>
-                    </Link>
-                    <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-                        <NavItems className="transition-colors hover:text-foreground/80 text-foreground/60" />
-                    </nav>
-                </div>
-                <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <nav className="flex items-center space-x-2">
-                        <ModeToggle />
-                        <Button variant="outline" size="sm">
-                            <Link to="/login">Login</Link>
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            <Link to="/register">Register</Link>
-                        </Button>
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className="h-9 w-9 px-0 md:hidden"
-                                >
-                                    <Menu className="h-5 w-5" />
-                                    <span className="sr-only">Toggle menu</span>
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="right">
-                                <nav className="flex flex-col space-y-4">
-                                    <NavItems
-                                        className="text-foreground/60 transition-colors hover:text-foreground/80"
-                                        onClick={() => {
-                                            document.body.click();
-                                        }}
-                                    />
-                                </nav>
-                            </SheetContent>
-                        </Sheet>
-                    </nav>
-                </div>
-            </div>
+        <header className="px-4 lg:px-6 h-14 flex items-center">
+            <Link className="flex items-center justify-center" to="#">
+                <Music className="h-6 w-6" />
+                <span className="ml-2 text-lg font-bold">DubJam</span>
+            </Link>
+            <nav className="ml-auto flex gap-4 sm:gap-6 mx-4">
+                <Link className="text-sm font-medium hover:underline underline-offset-4" to="/login">
+                    Login
+                </Link>
+                <Link className="text-sm font-medium hover:underline underline-offset-4" to="/register">
+                    Register
+                </Link>
+                <Link className="text-sm font-medium hover:underline underline-offset-4" to="/about">
+                    About
+                </Link>
+                {/* TODO: Only If they're authorized */}
+                <Link className="text-sm font-medium hover:underline underline-offset-4" to="/platform">
+                    Platform
+                </Link>
+            </nav>
+            <ModeToggle />
         </header>
     );
 }

@@ -1,14 +1,15 @@
 import { Route, Routes } from 'react-router-dom'
 import { Navbar } from './(misc)/navbar'
+import Landing from './pages/landing/landing-page'
 
 export default function App() {
     return (
         <>
             <Navbar />
             <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/platform" element={<Platform />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/test" element={<Test />} />
                 <Route path="/login" element={<h1>Login</h1>} />
                 <Route path="/register" element={<h1>Register</h1>} />
                 <Route path="*" element={<h1>Not Found</h1>} />
@@ -17,14 +18,11 @@ export default function App() {
     )
 }
 
-function Home() {
-    return <h1>Home</h1>
+
+function Platform() {
+    return <h1>Platform</h1>
 }
 
 function About() {
     return <h1>About</h1>
-}
-
-function Test() {
-    return <h1>Test</h1>
 }
