@@ -24,7 +24,7 @@ export default function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/ably" element={<LiveCursors spaces={spaces}/>} />
+                <Route path="/livecursors" element={<LiveCursors spaces={spaces}/>} />
                 <Route path="*" element={<h1>Not Found</h1>} />
             </Routes>
         </>
