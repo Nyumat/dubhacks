@@ -5,6 +5,7 @@ import Login from './pages/auth/login';
 import Register from './pages/auth/register';
 import Landing from './pages/landing/landing-page';
 import Settings from './pages/settings/settings';
+import { PlatformHome } from './pages/platform/home';
 
 export default function App() {
     return (
@@ -12,7 +13,7 @@ export default function App() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/platform" element={<Platform />} />
+                <Route path="/platform" element={<PlatformHome />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -22,12 +23,3 @@ export default function App() {
         </>
     )
 }
-
-
-function Platform() {
-    return <h1>Platform</h1>
-}
-
-// function About() {
-//     return <h1>About</h1>
-// }
