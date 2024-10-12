@@ -10,14 +10,15 @@ export default function About() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-primary to-primary-foreground text-primary-foreground py-20">
-          <div className="container mx-auto px-4">
+        <section className="bg-background text-foreground py-48">
+          <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Revolutionizing Music Creation</h1>
-            <p className="text-xl md:text-2xl mb-8">
+            <p className="text-xl md:text-xl mb-8 text-muted-foreground max-w-2xl mx-auto">
               Dubjam is on a mission to empower musicians and producers with cutting-edge AI technology.
-              Our initiatives focus on democratizing music production and fostering creativity.
+              Our initiatives focus on democratizing music production and fostering creativity. Collaborate
+              on music production with your colleagues in real time.
             </p>
-            <Button variant="secondary" size="lg">
+            <Button size="lg">
               Learn More
             </Button>
           </div>
