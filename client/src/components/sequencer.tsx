@@ -124,12 +124,10 @@ export function Sequencer({ samples, numOfSteps = 16 }: Props) {
     };
 
     const handleTrackVolumeChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
+        e: number,
         trackId: number
     ) => {
-        tracksRef.current[trackId].volume.volume.value = Tone.gainToDb(
-            Number(e.target.value)
-        );
+        tracksRef.current[trackId].volume.volume.value = Tone.gainToDb(e);
     };
 
     const clearSteps = () => {
