@@ -15,8 +15,7 @@ const client = new Realtime({
   key: import.meta.env.VITE_ABLY_KEY,
 });
 
-const PUBLISHABLE_KEY =
-  "pk_test_d29ydGh5LWZvd2wtMjcuY2xlcmsuYWNjb3VudHMuZGV2JA";
+const PUBLISHABLE_KEY = import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
