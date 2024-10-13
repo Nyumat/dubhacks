@@ -3,11 +3,23 @@ import { User } from "../models/user";
 const router = express.Router();
 
 // Route to create a new user
-router.post("/user/create", async (req, res) => {
-  const { email, tracks = [] } = req.body;
+router.post("/user/create", async (req: any, res: any) => {
+  const { userId, email, tracks = [] } = req.query;
 
   try {
-    const user = new User({ email, tracks });
+    // Check if a user with this email already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User already exists, so you can update the tracks if needed
+      user.tracks = tracks;
+      const updatedUser = await user.save();
+      console.log("User updated successfully:", updatedUser);
+      return res.status(200).json(updatedUser);
+    }
+
+    // If the user doesn't exist, create a new one
+    user = new User({ userId, email, tracks });
     const savedUser = await user.save();
     console.log("User created successfully:", savedUser);
     res.status(201).json(savedUser);

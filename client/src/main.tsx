@@ -16,7 +16,7 @@ const client = new Realtime({
 });
 
 const PUBLISHABLE_KEY =
-  process.env.;
+  "pk_test_d29ydGh5LWZvd2wtMjcuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

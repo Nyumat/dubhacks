@@ -15,7 +15,7 @@ mongoose
   .catch((err) => console.log(err));
 app.use(cors());
 
-app.use("/user", router);
+app.use("/", router);
 
 app.get("/", (req, res) => {
   // send a simple json response

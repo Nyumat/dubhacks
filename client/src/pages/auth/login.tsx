@@ -9,11 +9,13 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
+  useUser,
 } from "@clerk/clerk-react";
 
 export default function Login() {
   const { theme } = useTheme();
   const [backgroundImage, setBackgroundImage] = useState("");
+  const { user } = useUser();
 
   useEffect(() => {
     if (theme === "dark") {
@@ -31,13 +33,22 @@ export default function Login() {
   }, [theme]);
 
   useEffect(() => {
-    // Fetch data from the server
-    fetch("http://localhost:8080") // Adjust the URL to match your server's URL and port
-      .then((response) => response.json())
-      .then((data) => console.log(data))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+    if (user) {
+      const queryParams = new URLSearchParams({
+        userId: user.id,
+        email: user?.primaryEmailAddress?.emailAddress ?? "",
+      });
 
+      fetch(`http://localhost:8080/user/create?${queryParams.toString()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .catch((error) => console.error("Error creating user:", error));
+    }
+  }, [user]);
   return (
     <div
       className="bg-gray-1000 min-h-screen flex flex-col items-center py-12 sm:py-24"
