@@ -135,11 +135,14 @@ export function Synthesizer({ channel }: Ably.RealtimeChannel) {
             try {
                 await channel.subscribe("keyPress", (message) => {
                     const { note } = message.data;
+                    console.log("Received keyPress event:", note);
                     playNote(note, true, false); // false indicates not locally triggered
+
                 });
 
                 await channel.subscribe("keyRelease", (message) => {
                     const { note } = message.data;
+                    console.log("Received keyRelease event:", note);
                     playNote(note, false, false); // false indicates not locally triggered
                 });
             } catch (error) {
@@ -264,7 +267,7 @@ export function Synthesizer({ channel }: Ably.RealtimeChannel) {
                         key={noteObj.note}
                         note={noteObj.note}
                         keyName={noteObj.keyName}
-                        playNote={playNote}
+                        playNote={playNoteWithAbly}
                         keyDown={keysDown[noteObj.note] || false}
                     />
                 ))}
