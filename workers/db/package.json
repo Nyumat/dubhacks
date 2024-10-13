@@ -1,0 +1,23 @@
+{
+  "name": "db",
+  "module": "index.ts",
+  "type": "module",
+  "workspaces": ["workers/db/*"],
+  "scripts": {
+    "db:generate": "bunx prisma generate --accelerate",
+    "db:push": "prisma db push --skip-generate",
+    "db:format": "prisma format",
+    "db:studio": "prisma studio"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@prisma/extension-accelerate": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prisma": "5.20.0"
+  }
+}

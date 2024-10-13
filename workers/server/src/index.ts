@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { auth } from './middlewares/auth';
 import { cors } from 'hono/cors';
+import { PrismaClient } from 'db';
 
 const app = new Hono();
 
