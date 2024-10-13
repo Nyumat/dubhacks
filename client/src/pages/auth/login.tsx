@@ -39,12 +39,15 @@ export default function Login() {
         email: user?.primaryEmailAddress?.emailAddress ?? "",
       });
 
-      fetch(`http://localhost:8080/user/create?${queryParams.toString()}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      fetch(
+        `https://dubjam-backend.onrender.com/user/create?${queryParams.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
         .then((response) => response.json())
         .catch((error) => console.error("Error creating user:", error));
     }
