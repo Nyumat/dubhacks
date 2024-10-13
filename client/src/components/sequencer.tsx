@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import * as Ably from 'ably';
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
@@ -57,10 +58,11 @@ type Track = {
 
 type Props = {
     samples: { url: string; name: string }[];
+    channel: Ably.RealtimeChannel;
     numOfSteps?: number;
 };
 
-export function Sequencer({ samples, numOfSteps = 16 }: Props) {
+export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
     const [isPlaying, setIsPlaying] = React.useState(false);
     const [checkedSteps, setCheckedSteps] = React.useState([] as string[]);
     const [currentStep, setCurrentStep] = React.useState(0);
@@ -93,12 +95,35 @@ export function Sequencer({ samples, numOfSteps = 16 }: Props) {
     };
 
     useEffect(() => {
+        const subscribeToChannel = async () => {
+          try {
+            // Subscribe to the channel
+            await channel.subscribe("stepToggle", (message) => {
+              const { trackId, stepId, action } = message.data;
+    
+              // Update checkedSteps state based on the action (check or uncheck)
+              const stepIdString = `${trackId}-${stepId}`;
+              if (action === "check") {
+                  setCheckedSteps((prev) => [...prev, stepIdString]);
+              } else if (action === "uncheck") {
+                  setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
+              }
+            });
+    
+            } catch (error) {
+                    console.error("Error subscribing to the channel or fetching data:", error);
+            }
+        };
+    
+        // Retrieve and parse data from localStorage if it exists
         const data = localStorage.getItem("data");
         if (data) {
             const parsedData = JSON.parse(data);
             setCheckedSteps(parsedData.checkedSteps);
         }
-    }, []);
+
+        subscribeToChannel();
+    }, [channel]);
 
     useEffect(() => {
         if (seqRef.current) {
@@ -236,10 +261,17 @@ export function Sequencer({ samples, numOfSteps = 16 }: Props) {
                                                         stepsRef.current[trackId][stepId] = elm;
                                                     }}
                                                     onChange={() => {
+                                                        // Data to be sent
+                                                        const messageData = { trackId, stepId }; 
+                                                
                                                         setCheckedSteps((prev) => {
                                                             if (prev.includes(id)) {
+                                                                // Publish the step unchecking event
+                                                                channel.publish("stepToggle", { ...messageData, action: "uncheck" });
                                                                 return prev.filter((step) => step !== id);
                                                             }
+                                                            // Publish the step checking event
+                                                            channel.publish("stepToggle", { ...messageData, action: "check" });
                                                             return [...prev, id];
                                                         });
                                                     }}

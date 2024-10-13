@@ -1,13 +1,18 @@
+import * as Ably from 'ably';
 import { Sequencer } from "@/components/sequencer";
 import { Synthesizer } from "@/components/synthesizer";
 import { useState } from "react";
 
-export function Soundboard() {
+export interface SoundboardProps {
+    channel: Ably.RealtimeChannel | null;
+}
+
+export function Soundboard({ channel }: SoundboardProps) {
     const [isSequencerOpen, setIsSequencerOpen] = useState(false);
     const [isPianoOpen, setIsPianoOpen] = useState(false);
     return (
         <div>
-            <div>
+          <div>
                 <div className="flex justify-center space-x-4">
                     <button
                         onClick={() => setIsSequencerOpen(!isSequencerOpen)}
@@ -34,6 +39,7 @@ export function Soundboard() {
                             { url: "/samples/tom.wav", name: "Tom" },
                             { url: "/samples/tom2.wav", name: "Tom 2" },
                         ]}
+                        channel={channel!}
                     />
                 )}
                 {isPianoOpen && <Synthesizer />}
