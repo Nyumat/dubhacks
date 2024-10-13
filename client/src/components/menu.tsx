@@ -64,7 +64,7 @@ export function SequencerMenu({
     ]);
 
     return (
-        <Menubar>
+        <Menubar className="dark:bg-primary/50 bg-primary/40 text-purple-100">
             <MenubarMenu>
                 <MenubarTrigger>Sequencer</MenubarTrigger>
                 <MenubarContent>
@@ -94,6 +94,14 @@ export function SequencerMenu({
                     <MenubarItem onSelect={() => setIsLayoutUnlocked((prev) => !prev)}>
                         {`${isLayoutUnlocked ? "Lock" : "Unlock"} Track Layout`}{" "}
                         <MenubarShortcut>⌘  T</MenubarShortcut>
+                    </MenubarItem>
+                </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+                <MenubarTrigger>Synth</MenubarTrigger>
+                <MenubarContent>
+                    <MenubarItem onSelect={() => { }}>
+                        Change Synth <MenubarShortcut>⌘  S</MenubarShortcut>
                     </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>

@@ -43,9 +43,9 @@ export function ManageSample({
         <div>
             <Dialog>
                 <DialogTrigger>
-                    <Button className="flex w-40 flex-row items-center justify-between rounded-sm bg-neutral-900 hover:bg-neutral-700">
+                    <Button className="flex w-40 flex-row items-center justify-between rounded-sm dark:bg-neutral-900 ring-1 ring-foreground/50 hover:bg-neutral-700">
                         <span className="text-white">{selectedSample?.name || name}</span>
-                        <Icons.settings className="size-6 text-white" />
+                        <Icons.settings className="size-6 dark:text-primary" />
                     </Button>
                 </DialogTrigger>
                 <DialogContent>

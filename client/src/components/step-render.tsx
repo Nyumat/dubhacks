@@ -91,7 +91,7 @@ export default function StepRender({
                     >
                         <TrashIcon
                             onClick={() => removeTrack(index)}
-                            className="absolute -left-11 cursor-pointer"
+                            className="absolute -left-11 cursor-pointer stroke-white dark:stroke-primary"
                         />
                         {sampleState[trackId] !== undefined && (
                             <ManageSample
@@ -112,12 +112,12 @@ export default function StepRender({
                                         : null;
                                 const isCurrentStep =
                                     stepId === currentStep && isPlaying;
-                                const shade = 800;
+                                const shade = 500;
                                 return (
                                     <label
                                         key={id}
                                         className={cn(
-                                            `w-10 h-10 rounded-sm flex items-center justify-center transition-transform duration-75 cursor-default transform bg-neutral-${shade} active:scale-90`,
+                                            `w-10 h-10 rounded-sm flex items-center justify-center transition-transform duration-75 cursor-default transform bg-purple-200/70 dark:bg-neutral-950/55 ring-2 ring-[#6D28D9] active:scale-90`,
                                             {
                                                 "bg-green-500":
                                                     checkedStep,
