@@ -57,6 +57,45 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
         localStorage.setItem("data", JSON.stringify(data));
     };
 
+    React.useEffect(() => {
+        setTrackIds([...Array(sampleState.length).keys()]);
+        tracksRef.current = sampleState.map((sample, i) => {
+            const volume = new Tone.Volume(0).toDestination();
+            const sampler = new Tone.Sampler({
+                urls: {
+                    [NOTE]: sample.url,
+                },
+            }).connect(volume);
+            return {
+                id: i,
+                sampler,
+                volume,
+            };
+        });
+
+        seqRef.current = new Tone.Sequence(
+            (time, step) => {
+                setCurrentStep(step);
+                tracksRef.current.map((trk) => {
+                    if (stepsRef.current[trk.id]?.[step]?.checked) {
+                        trk.sampler.triggerAttack(NOTE, time);
+                    }
+                    lampsRef.current[step].checked = true;
+                });
+            },
+            [...stepIds],
+            "16n"
+        );
+
+        seqRef.current.start(0);
+
+        return () => {
+            seqRef.current?.dispose();
+            tracksRef.current.map((trk) => void trk.sampler.dispose());
+        };
+
+    }, [sampleState]);
+
     useEffect(() => {
         const subscribeToChannel = async () => {
             try {
@@ -182,6 +221,7 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
             tracksRef.current.map((trk) => void trk.sampler.dispose());
         };
     }, [samples, numOfSteps]);
+
 
     const handleRename = (
         e: React.ChangeEvent<HTMLInputElement>,

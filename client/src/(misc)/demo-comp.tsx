@@ -153,9 +153,9 @@ export default function Landing() {
                         <motion.h2
                             className="mx-auto text-3xl max-w-4xl font-bold sm:text-5xl text-center mb-12"
                             ref={ref2}
-                            initial={{ opacity: 0, y: 40 }}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={isInView2 ? { opacity: 1, y: -30 } : {}}
-                            transition={{ duration: 1 }}
+                            transition={{ duration: 0.8 }}
                         >
                             Sequencing, synthesizing, and sharing music has never been easier.
                         </motion.h2>
@@ -205,28 +205,63 @@ export default function Landing() {
                 </section>
                 <section className="w-full py-12 md:py-24 lg:py-[4.2rem] border-t-2 border-primary/80">
                     <div className="container px-4 md:px-6 mx-auto">
-                        <div className="flex flex-col items-center space-y-4 text-center z-50">
-                            <div className="space-y-2">
-                                <motion.h2 className="text-3xl font-bold sm:text-5xl"
-                                    ref={ref3}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={isInView3 ? { opacity: 1, y: -10 } : {}}
-                                    transition={{ duration: 0.8 }}
-                                >
-                                    Ready to join the fun?
-                                </motion.h2>
-                                <p className="mx-auto md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-gray-600 dark:text-white/70"
-                                >
-                                    Join a community of music enthusiasts and start creating music together.
-                                </p>
-                                <Button size="lg" className="translate-y-4">
-                                    <Link className="text-xl font-medium" to="/register">
-                                        Get started
-                                    </Link>
-                                </Button>
+                        <h1 className="text-[9rem] mx-auto text-center">
+                            DubJam
+                        </h1>
+                        <div className="container px-4 md:px-6 mx-auto">
+                            <motion.h2
+                                className="mx-auto text-3xl max-w-4xl font-bold sm:text-5xl text-center mt-12 mb-12"
+                                ref={ref2}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={isInView2 ? { opacity: 1, y: -30 } : {}}
+                                transition={{ duration: 0.8 }}
+                            >
+                                Sequencing, synthesizing, and sharing music has never been easier.
+                            </motion.h2>
+                            <div className="max-w-3xl mx-auto px-20 py-12 rounded-lg shadow-2xl relative backdrop-filter backdrop-blur-3xl">
+                                <div className="absolute top-12 left-4 flex flex-col gap-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <VolumeKnob key={i} />
+                                    ))}
+                                </div>
+                                <div className="absolute top-12 right-4 flex flex-col gap-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <VolumeKnob key={i} />
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-12 gap-2 mb-4">
+                                    {[...Array(24)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            className={`h-8 rounded ${i === currentStep || i === (currentStep + 12) % 24 ? 'bg-primary' : 'bg-gray-200 dark:bg-black-700'}`}
+                                            initial={{ opacity: 0.5 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.05 }}
+                                        ></motion.div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-start items-center mb-4 gap-4">
+                                    <Button size="sm">Play</Button>
+                                    <Button size="sm" variant="outline">Stop</Button>
+                                    <VolumeKnob />
+                                </div>
+                                <div className="grid grid-cols-12 gap-1">
+                                    {[...Array(60)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            className={`h-12 ${selectedItems.includes(i) ? 'bg-blue-500' : i % 2 === 0 ? 'bg-white dark:bg-purple-100/80 ring-2 ring-primary' : 'bg-gray-200 dark:bg-green-500 ring-primary ring-2'} rounded`}
+                                            onClick={() => toggleSelection(i)}
+                                            initial={{ opacity: 0.5 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.05 }}
+
+                                        ></motion.div>
+                                    ))}
+                                </div>
+
                             </div>
                         </div>
-                        <div className="relative flex size-full scale-150 bottom-0 max-w-lg items-center justify-center overflow-hidden rounded-lg border-none bg-none px-40 pb-32 pt-8 md:pb-60 mx-auto mt-20">
+                        <div className="relative flex size-full scale-150 bottom-0 max-w-lg items-center justify-center overflow-hidden rounded-lg border-none bg-none px-40 pb-32 pt-8 md:pb-60 mx-auto">
                             <Globe className="top-12" />
                             <div className="pointer-events-none absolute h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,220,255,0))]" />
                         </div>
