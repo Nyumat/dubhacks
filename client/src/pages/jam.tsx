@@ -3,7 +3,7 @@ import { useMembers, useSpace } from "@ably/spaces/react";
 import { mockNames } from "../utils/mockNames";
 import { colours } from "../utils/helpers";
 import { MemberCursors, YourCursor } from "../components/Cursors";
-
+import { Soundboard } from "./platform/soundboard";
 import type { Member } from "../utils/types";
 
 import styles from "../assets/LiveCursors.module.css";
@@ -36,7 +36,7 @@ const Jam = () => {
       ref={liveCursors}
       className={`example-container ${styles.liveCursorsContainer}`}
     >
-      <p style={{ maxWidth: "80%", textAlign: "center" }}>Move your cursor over the screen to see live cursors in action</p>
+      <Soundboard />
       <YourCursor self={self as Member | null} parentRef={liveCursors} />
       <MemberCursors />
     </div>

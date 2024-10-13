@@ -23,9 +23,6 @@ export function Navbar() {
                 <Link className="text-sm font-medium hover:underline underline-offset-4" to="/platform">
                     Platform
                 </Link>
-                <Link className="text-sm font-medium hover:underline underline-offset-4" to="/livecursors">
-                    Live Cursors
-                </Link>
                 <Link className="text-sm font-medium hover:underline underline-offset-4" to="/settings">
                     Settings
                 </Link>

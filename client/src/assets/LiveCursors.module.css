@@ -1,10 +1,9 @@
 .liveCursorsContainer {
   width: 100%;
-  cursor: none;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: #f4f8fb;
+  background-color: #f4f8fb00;
   height: 100vh;
 }

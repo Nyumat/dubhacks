@@ -29,7 +29,7 @@ const YourCursor = ({
 
   return (
     <div
-      className={styles.cursor}
+      // className={styles.cursor}
       onMouseMove={(e) => handleSelfCursorMove(e)}
       style={{
         top: `${cursorPosition?.top || 0}px`,
