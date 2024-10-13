@@ -1,6 +1,11 @@
+import * as Ably from 'ably';
 import { Sequencer } from "@/components/sequencer";
 
-export function Soundboard() {
+export interface SoundboardProps {
+    channel: Ably.RealtimeChannel | null;
+}
+
+export function Soundboard({ channel }: SoundboardProps) {
 
     return (
         <div>
@@ -15,6 +20,7 @@ export function Soundboard() {
                     { url: "/samples/tom.wav", name: "Tom" },
                     { url: "/samples/tom2.wav", name: "Tom 2" },
                 ]}
+                channel={channel!}
             />
         </div>
     )
