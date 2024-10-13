@@ -221,49 +221,76 @@ export function Sequencer({ samples, numOfSteps = 16 }: Props) {
                         ))}
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                    <button
-                        onClick={handleStartClick}
-                        className="w-36 h-12 bg-blue-500 text-white rounded"
-                    >
-                        {isPlaying ? "Pause" : "Start"}
-                    </button>
-                    <button
-                        onClick={handleSaveClick}
-                        className="w-36 h-12 bg-blue-500 text-white rounded"
-                    >
-                        Save Set
-                    </button>
-                    <button
-                        onClick={clearSteps}
-                        className="w-36 h-12 bg-red-500 text-white rounded"
-                    >
-                        Clear
-                    </button>
-                    <label className="flex flex-col items-center">
-                        <span>BPM</span>
-                        <input
-                            type="range"
-                            min={30}
-                            max={300}
-                            step={1}
-                            onChange={handleBpmChange}
-                            defaultValue={120}
-                        />
-                    </label>
-                    <label className="flex flex-col items-center">
-                        <span>Volume</span>
-                        <input
-                            type="range"
-                            min={0}
-                            max={1}
-                            step={0.01}
-                            onChange={handleVolumeChange}
-                            defaultValue={1}
-                        />
-                    </label>
-                </div>
+                <ControlSequencer
+                    hide={true}
+                    isPlaying={isPlaying}
+                    handleStartClick={handleStartClick}
+                    handleSaveClick={handleSaveClick}
+                    clearSteps={clearSteps}
+                    handleBpmChange={handleBpmChange}
+                    handleVolumeChange={handleVolumeChange}
+                />
             </div>
         </>
     );
+}
+
+interface ControlSequencerProps {
+    hide: boolean
+    isPlaying: boolean;
+    handleStartClick: () => void;
+    handleSaveClick: () => void;
+    clearSteps: () => void;
+    handleBpmChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function ControlSequencer({ ...props }: ControlSequencerProps) {
+    const { isPlaying, handleStartClick, handleSaveClick, clearSteps, handleBpmChange, handleVolumeChange, hide } = props;
+    return (
+        <>
+            <div className={cn("grid grid-cols-3 gap-4 place-items-center", { hidden: hide })}>
+                <button
+                    onClick={handleStartClick}
+                    className="w-36 h-12 bg-blue-500 text-white rounded"
+                >
+                    {isPlaying ? "Pause" : "Start"}
+                </button>
+                <button
+                    onClick={handleSaveClick}
+                    className="w-36 h-12 bg-blue-500 text-white rounded"
+                >
+                    Save Set
+                </button>
+                <button
+                    onClick={clearSteps}
+                    className="w-36 h-12 bg-red-500 text-white rounded"
+                >
+                    Clear
+                </button>
+                <label className="flex flex-col items-center">
+                    <span>BPM</span>
+                    <input
+                        type="range"
+                        min={30}
+                        max={300}
+                        step={1}
+                        onChange={handleBpmChange}
+                        defaultValue={120}
+                    />
+                </label>
+                <label className="flex flex-col items-center">
+                    <span>Volume</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onChange={handleVolumeChange}
+                        defaultValue={1}
+                    />
+                </label>
+            </div>
+        </>
+    )
 }

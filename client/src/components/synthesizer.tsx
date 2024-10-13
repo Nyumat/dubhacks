@@ -38,15 +38,13 @@ const generateNotes = (startOctave: number, numOctaves: number) => {
 
 const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
     const isSharp = note.includes("#");
-    const octave = parseInt(note.slice(-1));
-    const octaveStyles = [
-        "border-blue-500",
-        "border-red-500",
-        "border-green-500",
-        "border-yellow-500",
-    ];
     return (
-        <div className={cn("relative inline-block", isSharp ? "top-6" : "w-10")}> {/* Adjusted styling for smaller and closer keys */}
+        <div
+            className={cn(
+                "relative inline-block",
+                isSharp ? "top-0 w-2 h-16 -ml-3 z-20" : "w-12 h-32"
+            )} // Black keys are skinnier and overlaid between white keys
+        >
             <button
                 onMouseDown={() => playNote(note, true)}
                 onMouseUp={() => playNote(note, false)}
@@ -56,28 +54,13 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
                     playNote(note, false);
                 }}
                 className={`${isSharp
-                    ? "absolute z-10 h-10 w-10 bg-black text-white"
-                    : "h-24 w-10 text-black"
-                    } 
-        ${octaveStyles[octave - 4]} rounded-sm border-2 border-solid 
-        ${isSharp ? "border-black" : "border-neutral-800"} 
-        ${keyDown ? "bg-neutral-400" : isSharp ? "bg-black" : "bg-white"}`}
+                    ? "absolute z-20 h-16 w-6 bg-black"
+                    : "h-32 w-12 bg-white"
+                    } rounded-sm border border-solid 
+                    ${isSharp ? "border-black" : "border-neutral-800"} 
+                    ${keyDown ? "bg-gray-300" : ""}`}
             >
-                <div className="flex flex-col items-center gap-0">
-                    <span
-                        className={`${isSharp ? "text-white" : "text-purple-500"} text-xs`}
-                    >
-                        {keyName === undefined
-                            ? "?"
-                            : String(keyName).toLocaleUpperCase() ?? ""}
-                    </span>
-                    <span
-                        className={`${isSharp ? "text-white" : "text-black"
-                            } text-xs font-bold`}
-                    >
-                        {note.replace(/\d/, "")}
-                    </span>
-                </div>
+                <span className="text-[8px] text-white absolute bottom-1 right-1">{keyName}</span>
             </button>
         </div>
     );
@@ -94,7 +77,7 @@ export function Synthesizer() {
     const [keysDown, setKeysDown] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        setSynth(new Tone.PolySynth(Tone.Synth).toDestination());
+        setSynth(new Tone.PolySynth(Tone.Synth, { maxPolyphony: 32 }).toDestination()); // Increased max polyphony to 32
 
         return () => synth?.dispose();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -158,12 +141,18 @@ export function Synthesizer() {
             if (isRecording) {
                 setRecordedNotes((prevNotes) => [
                     ...prevNotes,
-                    { note, time: Tone.now() },
+                    { note, time: Tone.now(), type: 'attack' },
                 ]);
             }
         } else {
             synth?.triggerRelease(note);
             setKeysDown((prevKeysDown) => ({ ...prevKeysDown, [note]: false }));
+            if (isRecording) {
+                setRecordedNotes((prevNotes) => [
+                    ...prevNotes,
+                    { note, time: Tone.now(), type: 'release' },
+                ]);
+            }
         }
     };
 
@@ -180,13 +169,17 @@ export function Synthesizer() {
         if (recordedNotes.length === 0) return;
         setIsPlayingBack(true);
         const now = Tone.now();
-        recordedNotes.forEach(({ note, time }) => {
-            synth.triggerAttackRelease(
-                note,
-                "8n",
-                now + (time - recordedNotes[0].time)
-            );
-        });
+
+        for (let i = 0; i < recordedNotes.length; i++) {
+            const { note, time, type } = recordedNotes[i];
+            const delay = time - recordedNotes[0].time;
+            if (type === 'attack') {
+                synth.triggerAttack(note, now + delay);
+            } else if (type === 'release') {
+                synth.triggerRelease(note, now + delay);
+            }
+        }
+
         setTimeout(
             () => setIsPlayingBack(false),
             (recordedNotes[recordedNotes.length - 1].time - recordedNotes[0].time) *
@@ -198,7 +191,7 @@ export function Synthesizer() {
         return (
             <div className="flex flex-col mt-4">
                 <h3 className="text-lg mb-2">Recorded Notes:</h3>
-                <div className="flex flex-row items-center gap-1">
+                <div className="grid grid-cols-4 gap-2">
                     {recordedNotes.map((record, index) => (
                         <div
                             key={index}
@@ -206,7 +199,7 @@ export function Synthesizer() {
                             style={{
                                 width: "20px",
                                 height: `${Math.max(20, (recordedNotes[index + 1]?.time - record.time) * 100)}px`,
-                                backgroundColor: "#4CAF50",
+                                backgroundColor: record.type === 'attack' ? "#4CAF50" : "#FF5722",
                                 marginRight: "4px",
                             }}
                         >
@@ -221,11 +214,70 @@ export function Synthesizer() {
     };
 
     return (
-        <div className="relative flex min-h-screen bg-background text-white">
+        <div className="relative flex flex-col items-center min-h-screen bg-background text-white">
+            {/* 
+            <SynthControls {...{
+                startRecording,
+                stopRecording,
+                playBackRecording,
+                octave,
+                setOctave,
+                startOctave,
+                setStartOctave,
+                isRecording,
+                isPlayingBack,
+                recordedNotes,
+            }} />
+            */}
+            <div className="flex h-fit flex-row justify-center overflow-x-auto mt-4">
+                {generateNotes(startOctave, octave).map((noteObj) => (
+                    <PianoKey
+                        key={noteObj.note}
+                        note={noteObj.note}
+                        keyName={noteObj.keyName}
+                        playNote={playNote}
+                        keyDown={keysDown[noteObj.note] || false}
+                    />
+                ))}
+            </div>
+
+            {visualizeRecording()}
+        </div>
+    );
+}
+
+interface SynthControlProps {
+    startRecording: () => void;
+    stopRecording: () => void;
+    playBackRecording: () => void;
+    octave: number;
+    setOctave: (octave: number) => void;
+    startOctave: number;
+    setStartOctave: (startOctave: number) => void;
+    isRecording: boolean;
+    isPlayingBack: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recordedNotes: any[];
+}
+
+function SynthControls({
+    startRecording,
+    stopRecording,
+    playBackRecording,
+    octave,
+    setOctave,
+    startOctave,
+    setStartOctave,
+    isRecording,
+    isPlayingBack,
+    recordedNotes,
+}: SynthControlProps) {
+    return (
+        <>
             <div className="min-w-48">
                 <div className="relative top-3.5 h-full">
                     <div className="flex h-fit max-w-full flex-col p-2">
-                        <div className="flex flex-row">
+                        <div className="flex flex-row justify-center">
                             <button
                                 onClick={startRecording}
                                 disabled={isRecording || isPlayingBack}
@@ -292,20 +344,6 @@ export function Synthesizer() {
                     </div>
                 </div>
             </div>
-
-            <div className="flex h-fit flex-row justify-center overflow-x-auto"> {/* Adjusted for horizontal scroll */}
-                {generateNotes(startOctave, octave).map((noteObj) => (
-                    <PianoKey
-                        key={noteObj.note}
-                        note={noteObj.note}
-                        keyName={noteObj.keyName}
-                        playNote={playNote}
-                        keyDown={keysDown[noteObj.note] || false}
-                    />
-                ))}
-            </div>
-
-            {visualizeRecording()}
-        </div>
-    );
+        </>
+    )
 }
