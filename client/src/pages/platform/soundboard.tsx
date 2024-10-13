@@ -3,7 +3,7 @@ import { Synthesizer } from "@/components/synthesizer";
 import { useState } from "react";
 
 export function Soundboard() {
-    const [isSequencerOpen, setIsSequencerOpen] = useState(false);
+    const [isSequencerOpen, setIsSequencerOpen] = useState(true);
     const [isPianoOpen, setIsPianoOpen] = useState(false);
     return (
         <div>

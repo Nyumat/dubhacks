@@ -7,6 +7,7 @@ import './index.css';
 import { AblyProvider } from "ably/react";
 import { nanoid } from "nanoid";
 import { Realtime } from 'ably';
+import { Toaster } from 'sonner';
 
 const client = new Realtime({
     clientId: nanoid(),
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
             <BrowserRouter>
                 <ThemeProvider>
                     <App />
+                    <Toaster />
                 </ThemeProvider>
             </BrowserRouter>
         </AblyProvider>
