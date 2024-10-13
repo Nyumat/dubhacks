@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import * as Ably from 'ably';
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import * as Ably from 'ably';
 import React, { useEffect } from "react";
 import * as Tone from "tone";
 import { SequencerMenu } from "./menu";
@@ -31,7 +30,7 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
     const stepsRef = React.useRef<HTMLInputElement[][]>([[]]);
     const lampsRef = React.useRef<HTMLInputElement[]>([]);
     const seqRef = React.useRef<Tone.Sequence | null>(null);
-const [trackIds, setTrackIds] = React.useState([
+    const [trackIds, setTrackIds] = React.useState([
         ...Array(samples.length).keys(),
     ]);
     const stepIds = [...Array(numOfSteps).keys()] as const;
@@ -58,25 +57,25 @@ const [trackIds, setTrackIds] = React.useState([
 
     useEffect(() => {
         const subscribeToChannel = async () => {
-          try {
-            // Subscribe to the channel
-            await channel.subscribe("stepToggle", (message) => {
-              const { trackId, stepId, action } = message.data;
-    
-              // Update checkedSteps state based on the action (check or uncheck)
-              const stepIdString = `${trackId}-${stepId}`;
-              if (action === "check") {
-                  setCheckedSteps((prev) => [...prev, stepIdString]);
-              } else if (action === "uncheck") {
-                  setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
-              }
-            });
-    
+            try {
+                // Subscribe to the channel
+                await channel.subscribe("stepToggle", (message) => {
+                    const { trackId, stepId, action } = message.data;
+
+                    // Update checkedSteps state based on the action (check or uncheck)
+                    const stepIdString = `${trackId}-${stepId}`;
+                    if (action === "check") {
+                        setCheckedSteps((prev) => [...prev, stepIdString]);
+                    } else if (action === "uncheck") {
+                        setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
+                    }
+                });
+
             } catch (error) {
-                    console.error("Error subscribing to the channel or fetching data:", error);
+                console.error("Error subscribing to the channel or fetching data:", error);
             }
         };
-    
+
         // Retrieve and parse data from localStorage if it exists
         const data = localStorage.getItem("data");
         if (data) {
