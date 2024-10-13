@@ -5,6 +5,8 @@ import { keys, notes } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import * as Tone from "tone";
+import * as Ably from 'ably';
+
 
 type Note = {
     note: string;
@@ -66,7 +68,8 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
     );
 };
 
-export function Synthesizer() {
+
+export function Synthesizer({ channel }: Ably.RealtimeChannel) {
     //remember to remove setOctave and just display the entire set of keys and octaves as a single scrollable row of keys
     const [octave, setOctave] = useState(3);
     const [startOctave, setStartOctave] = useState(3);
@@ -105,22 +108,14 @@ export function Synthesizer() {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (noteKeyMap[event.key] && !keysDown[noteKeyMap[event.key].note]) {
                 const { note } = noteKeyMap[event.key];
-                playNote(note, true);
-                setKeysDown((prevKeysDown) => ({
-                    ...prevKeysDown,
-                    [noteKeyMap[event.key].note]: true,
-                }));
+                playNoteWithAbly(note, true);
             }
         };
 
         const handleKeyUp = (event: KeyboardEvent) => {
             if (noteKeyMap[event.key]) {
                 const { note } = noteKeyMap[event.key];
-                playNote(note, false);
-                setKeysDown((prevKeysDown) => ({
-                    ...prevKeysDown,
-                    [noteKeyMap[event.key].note]: false,
-                }));
+                playNoteWithAbly(note, false);
             }
         };
 
@@ -131,14 +126,48 @@ export function Synthesizer() {
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [synth, isRecording, startOctave, octave, keysDown]);
+    }, [synth, keysDown, startOctave, octave]);
 
-    const playNote = (note, isKeyDown) => {
+
+    // Subscribe to Ably channel for real-time key press/release events
+    useEffect(() => {
+        const subscribeToChannel = async () => {
+            try {
+                await channel.subscribe("keyPress", (message) => {
+                    const { note } = message.data;
+                    playNote(note, true, false); // false indicates not locally triggered
+                });
+
+                await channel.subscribe("keyRelease", (message) => {
+                    const { note } = message.data;
+                    playNote(note, false, false); // false indicates not locally triggered
+                });
+            } catch (error) {
+                console.error("Error subscribing to the channel:", error);
+            }
+        };
+
+        subscribeToChannel();
+    }, [channel, synth]);
+
+    // Publish key press and release events to Ably
+    const playNoteWithAbly = (note: string, isKeyDown: boolean) => {
+        if (isKeyDown) {
+            // Publish keyPress event
+            channel.publish("keyPress", { note });
+        } else {
+            // Publish keyRelease event
+            channel.publish("keyRelease", { note });
+        }
+        playNote(note, isKeyDown, true); // true indicates locally triggered
+    };
+
+
+    const playNote = (note: string, isKeyDown: boolean, isLocal: boolean) => {
         if (isKeyDown) {
             synth?.triggerAttack(note);
             setKeysDown((prevKeysDown) => ({ ...prevKeysDown, [note]: true }));
-            if (isRecording) {
+            if (isRecording && isLocal) {
                 setRecordedNotes((prevNotes) => [
                     ...prevNotes,
                     { note, time: Tone.now(), type: 'attack' },
@@ -147,7 +176,7 @@ export function Synthesizer() {
         } else {
             synth?.triggerRelease(note);
             setKeysDown((prevKeysDown) => ({ ...prevKeysDown, [note]: false }));
-            if (isRecording) {
+            if (isRecording && isLocal) {
                 setRecordedNotes((prevNotes) => [
                     ...prevNotes,
                     { note, time: Tone.now(), type: 'release' },

@@ -43,7 +43,11 @@ export function Soundboard({ channel }: SoundboardProps) {
                             channel={channel!}
                         />
                     )}
-                    {isPianoOpen && <Synthesizer />}
+                    {isPianoOpen && (
+                        <Synthesizer 
+                        channel={channel!}
+                        />
+                    )}
                 </div>
             </div>
         </div>
