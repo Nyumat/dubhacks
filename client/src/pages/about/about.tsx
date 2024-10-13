@@ -4,13 +4,31 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 // import { Separator } from "@/components/ui/separator"
 import { PlayCircle, CheckCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import background_dark from "../../assets/Background_dark1.png";
+import background_light from "../../assets/Background_light1.png";
+import { useTheme } from "@/components/theme-provider"
 
 export default function About() {
+  const { theme } = useTheme();
+  const [backgroundImage, setBackgroundImage] = useState('');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      setBackgroundImage(`url(${background_dark})`);
+    } else if (theme === 'light') {
+      setBackgroundImage(`url(${background_light})`);
+    } else {
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
+    }
+  }, [theme]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-background text-foreground py-48">
+        <section className="bg-background text-foreground py-48" style={{ backgroundImage }}>
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Revolutionizing Music Creation</h1>
             <p className="text-xl md:text-xl mb-8 text-muted-foreground max-w-2xl mx-auto">
@@ -40,7 +58,7 @@ export default function About() {
         </section>
 
         {/* Specs Section */}
-        <section className="py-20">
+        <section className="py-20" style={{ backgroundImage }}>
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold mb-12 text-center">Dubjam Specifications</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Upload } from "lucide-react"
+import background_dark from "../../assets/Background_dark1.png";
+import background_light from "../../assets/Background_light1.png";
+import { useTheme } from "@/components/theme-provider"
 
 export default function Settings() {
   const [name, setName] = useState("John Doe")
@@ -31,7 +34,22 @@ export default function Settings() {
     console.log("Profile updated:", { name, username, email, avatarUrl })
   }
 
+  const { theme } = useTheme();
+  const [backgroundImage, setBackgroundImage] = useState('');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      setBackgroundImage(`url(${background_dark})`);
+    } else if (theme === 'light') {
+      setBackgroundImage(`url(${background_light})`);
+    } else {
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
+    }
+  }, [theme]);
+
   return (
+    <div style={{ backgroundImage }}>
     <div className="container mx-auto py-10">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
@@ -91,6 +109,7 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   )
 }

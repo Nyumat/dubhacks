@@ -9,12 +9,30 @@ import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { AudioWaveform, Headphones, Layers, Music, Piano, Share2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import background_dark from "../../assets/Background_dark1.png";
+import background_light from "../../assets/Background_light1.png";
+import { useEffect, useState } from "react"
+import { useTheme } from "@/components/theme-provider"
 
 export default function Landing() {
+  const { theme } = useTheme();
+  const [backgroundImage, setBackgroundImage] = useState('');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      setBackgroundImage(`url(${background_dark})`);
+    } else if (theme === 'light') {
+      setBackgroundImage(`url(${background_light})`);
+    } else {
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
+    }
+  }, [theme]);
+
     return (
         <div className="flex flex-col min-h-screen">
             <main className="flex-1">
-                <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+                <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48" style={{ backgroundImage }}>
                     <div className="container px-4 md:px-6 mx-auto">
                         <div className="flex flex-col items-center space-y-4 text-center">
                             <div className="space-y-2">
@@ -26,8 +44,16 @@ export default function Landing() {
                                 </p>
                             </div>
                             <div className="space-x-4">
-                                <Button>Get Started</Button>
-                                <Button variant="outline">Learn More</Button>
+                                <Button>
+                                  <Link className="text-sm font-medium" to="/register">
+                                    Get started
+                                  </Link>
+                                </Button>
+                                <Button variant="outline">
+                                  <Link className="text-sm font-medium" to="/about">
+                                    Learn more
+                                  </Link>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -93,7 +119,7 @@ export default function Landing() {
                         </div>
                     </div>
                 </section>
-                <section className="w-full py-12 md:py-24 lg:py-32">
+                <section className="w-full py-12 md:py-24 lg:py-32" style={{ backgroundImage }}>
                     <div className="container px-4 md:px-6 mx-auto">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12">Try It Out</h2>
                         <div className="max-w-3xl mx-auto bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-lg">

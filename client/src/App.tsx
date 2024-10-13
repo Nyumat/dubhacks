@@ -8,6 +8,7 @@ import Register from './pages/auth/register';
 import Landing from './pages/landing/landing-page';
 import { PlatformHome } from './pages/platform/home';
 import Settings from './pages/settings/settings';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export default function App() {
     const client = useAbly();
@@ -15,6 +16,7 @@ export default function App() {
 
     return (
         <>
+          <ThemeProvider>
             <Navbar />
             <Routes>
                 <Route path="/" element={<Landing />} />
@@ -25,6 +27,7 @@ export default function App() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<h1>Not Found</h1>} />
             </Routes>
+          </ThemeProvider>
         </>
     )
 }
