@@ -3,7 +3,6 @@
 import { Input } from "@/components/ui/input";
 import { keys, notes } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import * as Ably from 'ably';
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import * as Tone from "tone";
@@ -69,7 +68,7 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
 };
 
 
-export function Synthesizer({ channel }: Ably.RealtimeChannel) {
+export function Synthesizer({ channel }) {
     const [octave, setOctave] = useState(3);
     const [startOctave, setStartOctave] = useState(3);
     const [synth, setSynth] = useState(null);

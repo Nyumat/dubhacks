@@ -13,7 +13,7 @@ import styles from "../assets/LiveCursors.module.css";
 /** 💡 Select a mock name to assign randomly to a new user that enters the space 💡 */
 const mockName = () => mockNames[Math.floor(Math.random() * mockNames.length)];
 
-const Jam = () => {
+export function Jam() {
   const [ably, setAbly] = useState<Ably.Realtime | null>(null);  // State to store Ably instance
   const [channel, setChannel] = useState<Ably.RealtimeChannel | null>(null);  // State to store the Ably channel
 

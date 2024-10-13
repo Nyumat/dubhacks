@@ -1,14 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Sequencer } from "@/components/sequencer";
 import { Synthesizer } from "@/components/synthesizer";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import * as Ably from 'ably';
 import { useState } from "react";
 
-export interface SoundboardProps {
-    channel: Ably.RealtimeChannel | null;
-}
 
 interface MusicControlsProps {
     isSequencerOpen: boolean;
@@ -40,7 +38,7 @@ const MusicControls = ({ isSequencerOpen, setIsSequencerOpen, isPianoOpen, setIs
     );
 };
 
-export function Soundboard({ channel }: SoundboardProps) {
+export function Soundboard({ channel }: { channel: any }) {
     const [isSequencerOpen, setIsSequencerOpen] = useState(true);
     const [isPianoOpen, setIsPianoOpen] = useState(false);
     return (
@@ -77,7 +75,8 @@ export function Soundboard({ channel }: SoundboardProps) {
                     <div className="relative flex justify-center w-full">
                         {isPianoOpen && (
                             <div className="w-max">
-                                <Synthesizer channel={channel!} />
+                                {/* // @ts-ignore */}
+                                <Synthesizer channel={channel} />
                             </div>
                         )}
                     </div>
