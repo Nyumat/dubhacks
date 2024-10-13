@@ -9,7 +9,7 @@ resource "aws_instance" "dubjam_instance" {
               sudo apt-get update
               sudo apt-get install -y nodejs npm
               git clone https://github.com/nyumat/dubhacks.git
-              cd dubjam
+              cd dubjam/client
               npm install
               npm start
               EOF
