@@ -1,0 +1,8 @@
+FROM jarredsumner/bun:0.5.1
+WORKDIR /app
+COPY package.json package.json
+COPY bun.lockb bun.lockb
+RUN bun install
+COPY index.ts index.ts
+EXPOSE 3000
+ENTRYPOINT ["bun", "index.js"]
