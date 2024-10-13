@@ -240,6 +240,7 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
                         isPlaying,
                         isLayoutUnlocked,
                         setTrackIds,
+                        channel,
                     }} />
                 </div>
                 <ControlSequencer

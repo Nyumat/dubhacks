@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
+import * as Ably from 'ably';
 import { Reorder } from "framer-motion";
 import { TrashIcon } from "lucide-react";
 import React from "react";
+import { toast } from "sonner";
 import { ManageSample } from "./sample-manager";
 import { Input } from "./ui/input";
 import { VolumeKnob } from "./volume-knob";
-import { toast } from "sonner";
 
 interface Props {
     trackIds: number[];
@@ -21,6 +22,7 @@ interface Props {
     setTrackIds: React.Dispatch<React.SetStateAction<number[]>>;
     setSampleState: React.Dispatch<React.SetStateAction<{ url: string; name: string }[]>>;
     sampleState: { url: string; name: string }[];
+    channel: Ably.RealtimeChannel | null;
 }
 
 export default function StepRender({
@@ -36,6 +38,7 @@ export default function StepRender({
     isLayoutUnlocked,
     setTrackIds,
     sampleState,
+    channel,
 }: Props) {
     const handleReorder = (newItems: number[]) => {
         if (isLayoutUnlocked) {
@@ -147,27 +150,23 @@ export default function StepRender({
                                                 ][stepId] = elm;
                                             }}
                                             onChange={() => {
-                                                setCheckedSteps(
-                                                    (prev) => {
-                                                        if (
-                                                            prev.includes(
-                                                                id
-                                                            )
-                                                        ) {
-                                                            return prev.filter(
-                                                                (
-                                                                    step
-                                                                ) =>
-                                                                    step !==
-                                                                    id
-                                                            );
-                                                        }
-                                                        return [
-                                                            ...prev,
-                                                            id,
-                                                        ];
+                                                if (!channel) {
+                                                    toast.error("Channel not found");
+                                                    return;
+                                                }
+
+                                                const messageData = { trackId, stepId };
+
+                                                setCheckedSteps((prev) => {
+                                                    if (prev.includes(id)) {
+                                                        // Publish the step unchecking event
+                                                        channel.publish("stepToggle", { ...messageData, action: "uncheck" });
+                                                        return prev.filter((step) => step !== id);
                                                     }
-                                                );
+                                                    // Publish the step checking event
+                                                    channel.publish("stepToggle", { ...messageData, action: "check" });
+                                                    return [...prev, id];
+                                                });
                                             }}
                                         />
                                     </label>

@@ -214,7 +214,7 @@ export function Synthesizer() {
     };
 
     return (
-        <div className="relative flex flex-col items-center min-h-screen bg-background text-white">
+        <div className="flex flex-col items-center bg-background text-white">
             {/* 
             <SynthControls {...{
                 startRecording,
