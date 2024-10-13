@@ -1,9 +1,19 @@
 .liveCursorsContainer {
   width: 100%;
+  cursor: none;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   background-color: #f4f8fb00;
   height: 100vh;
+}
+
+.liveCursorsContainer * {
+  cursor: none; 
+}
+
+/* Ensure that the cursor is hidden when any child element is focused */
+.liveCursorsContainer :focus {
+  cursor: none; /* Hides the cursor on focus */
 }

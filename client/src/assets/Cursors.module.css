@@ -1,5 +1,7 @@
 .cursor {
+  cursor: none;
   position: absolute;
+  pointer-events: none; 
 }
 
 .cursorName {
