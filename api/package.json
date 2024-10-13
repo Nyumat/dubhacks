@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --hot run index.ts",
-    "build": "tsc"
+    "build": "docker build -t bun-express"
   },
   "devDependencies": {
     "@types/bun": "latest",
