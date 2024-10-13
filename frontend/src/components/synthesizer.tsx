@@ -1,12 +1,22 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-//@ts-nocheck - this is a temporary fix to allow the code to compile
-import { Input } from "@/components/ui/input";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { keys, notes } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import * as Ably from "ably";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import * as Tone from "tone";
 import { SynthManager } from "./synth-manager";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 
 type Note = {
     note: string;
@@ -59,7 +69,7 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
                     : "h-32 w-12 bg-white"
                     } rounded-sm border border-solid 
                     ${isSharp ? "border-black" : "border-neutral-800"} 
-                    ${keyDown ? "bg-gray-300" : ""}`}
+                    ${keyDown ? "bg-purple-400" : ""}`}
             >
                 <span className="text-[8px] text-purple-400 absolute bottom-1 right-1">{keyName}</span>
             </button>
@@ -67,32 +77,135 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
     );
 };
 
+const instruments = [
+    { name: "Synth", value: "synth" },
+    { name: "AM Synth", value: "amSynth" },
+    { name: "FM Synth", value: "fmSynth" },
+    { name: "Membrane Synth", value: "membraneSynth" },
+];
 
-export function Synthesizer({ channel }) {
+type DubJamSynth = Tone.PolySynth | Tone.Synth | Tone.AMSynth | Tone.FMSynth | Tone.MembraneSynth;
+export type RecordedNote = {
+    note: string;
+    time: number;
+    type: string;
+};
+
+export function Synthesizer({ channel }: { channel: Ably.RealtimeChannel }) {
     const [octave, setOctave] = useState(3);
     const [startOctave, setStartOctave] = useState(3);
-    const [synth, setSynth] = useState(null);
+    const [synth, setSynth] = useState<DubJamSynth | undefined>(undefined);
     const [isRecording, setIsRecording] = useState(false);
-    const [recordedNotes, setRecordedNotes] = useState([]);
+    const [recordedNotes, setRecordedNotes] = useState<RecordedNote[]>([]);
     const [isPlayingBack, setIsPlayingBack] = useState(false);
     const [keysDown, setKeysDown] = useState<Record<string, boolean>>({});
+    const [currentInstrument, setCurrentInstrument] = useState("synth");
+    const [playbackProgress, setPlaybackProgress] = useState(0);
+    const [, setPlaybackDuration] = useState(0);
+    const [startRecordingTime, setStartRecordingTime] = useState(0);
+    const [showControls, setShowControls] = useState(false);
 
-    useEffect(() => {
-        setSynth(new Tone.PolySynth(Tone.Synth, { maxPolyphony: 32 }).toDestination()); // Increased max polyphony to 32
-
-        return () => synth?.dispose();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    const startRecording = useCallback(() => {
+        setRecordedNotes([]);
+        setIsRecording(true);
+        setStartRecordingTime(Tone.now());
     }, []);
 
+    const playBackRecording = useCallback(() => {
+        if (recordedNotes.length === 0) return;
+
+        setIsPlayingBack(true);
+        Tone.Transport.stop();
+        Tone.Transport.cancel();
+
+        const playbackDuration = recordedNotes[recordedNotes.length - 1].time;
+        setPlaybackDuration(playbackDuration);
+
+        recordedNotes.forEach((noteEvent) => {
+            const { note, time, type } = noteEvent;
+            if (type === 'attack') {
+                Tone.Transport.schedule((time) => {
+                    synth?.triggerAttack(note, time);
+                }, time);
+            } else {
+                Tone.Transport.schedule((time) => {
+                    synth?.triggerRelease(note, time);
+                }, time);
+            }
+        });
+
+        Tone.Transport.start();
+
+        const interval = setInterval(() => {
+            const elapsedTime = Tone.Transport.seconds;
+            setPlaybackProgress((elapsedTime / playbackDuration) * 100);
+            if (elapsedTime >= playbackDuration) {
+                clearInterval(interval);
+                setIsPlayingBack(false);
+                setPlaybackProgress(0);
+                Tone.Transport.stop();
+                Tone.Transport.cancel();
+            }
+        }, 100);
+    }, [recordedNotes, synth]);
+
     useEffect(() => {
-        const handleCapsLock = (e) => {
+        const createSynth = () => {
+            let newSynth;
+            switch (currentInstrument) {
+                case "amSynth":
+                    newSynth = new Tone.PolySynth(Tone.AMSynth);
+                    break;
+                case "fmSynth":
+                    newSynth = new Tone.PolySynth(Tone.FMSynth);
+                    break;
+                case "membraneSynth":
+                    newSynth = new Tone.PolySynth(Tone.MembraneSynth);
+                    break;
+                default:
+                    newSynth = new Tone.PolySynth(Tone.Synth);
+                    break;
+            }
+            // newSynth.set({ maxPolyphony: 32 });
+            newSynth.toDestination();
+            return newSynth;
+        };
+
+        const newSynth = createSynth();
+        setSynth(newSynth);
+
+        return () => {
+            newSynth.dispose();
+        };
+    }, [currentInstrument]);
+
+    useEffect(() => {
+        const handleCapsLock = (e: KeyboardEvent) => {
             if (e.getModifierState("CapsLock")) {
-                alert("Notice: Caps Lock is on. This will affect the piano keys.");
+                toast.error("Caps Lock is on. This will affect the piano keys.");
             }
         };
         window.addEventListener("keydown", handleCapsLock);
         return () => window.removeEventListener("keydown", handleCapsLock);
     }, []);
+
+    useEffect(() => {
+        const handleModifierKeyUp = (event: KeyboardEvent) => {
+            if (event.key === "Control" || event.key === "Alt" || event.key === "Meta") {
+                Object.keys(keysDown).forEach((note) => {
+                    if (keysDown[note]) {
+                        playNoteWithAbly(note, false);
+                    }
+                });
+                setKeysDown({});
+            }
+        };
+
+        window.addEventListener("keyup", handleModifierKeyUp);
+
+        return () => window.removeEventListener("keyup", handleModifierKeyUp);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [keysDown]);
 
     useEffect(() => {
         const noteKeyMap = generateNotes(startOctave, octave).reduce(
@@ -104,6 +217,8 @@ export function Synthesizer({ channel }) {
         );
 
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;
+
             if (noteKeyMap[event.key] && !keysDown[noteKeyMap[event.key].note]) {
                 const { note } = noteKeyMap[event.key];
                 playNoteWithAbly(note, true);
@@ -124,24 +239,22 @@ export function Synthesizer({ channel }) {
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
         };
-    }, [synth, keysDown, startOctave, octave]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [octave, keysDown, startOctave]);
 
-
-    // Subscribe to Ably channel for real-time key press/release events
     useEffect(() => {
         const subscribeToChannel = async () => {
             try {
                 await channel.subscribe("keyPress", (message) => {
                     const { note } = message.data;
                     console.log("Received keyPress event:", note);
-                    playNote(note, true, false); // false indicates not locally triggered
-
+                    playNote(note, true, false);
                 });
 
                 await channel.subscribe("keyRelease", (message) => {
                     const { note } = message.data;
                     console.log("Received keyRelease event:", note);
-                    playNote(note, false, false); // false indicates not locally triggered
+                    playNote(note, false, false);
                 });
             } catch (error) {
                 console.error("Error subscribing to the channel:", error);
@@ -149,20 +262,17 @@ export function Synthesizer({ channel }) {
         };
 
         subscribeToChannel();
-    }, [channel, synth]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [channel]);
 
-    // Publish key press and release events to Ably
     const playNoteWithAbly = (note: string, isKeyDown: boolean) => {
         if (isKeyDown) {
-            // Publish keyPress event
             channel.publish("keyPress", { note });
         } else {
-            // Publish keyRelease event
             channel.publish("keyRelease", { note });
         }
-        playNote(note, isKeyDown, true); // true indicates locally triggered
+        playNote(note, isKeyDown, true);
     };
-
 
     const playNote = (note: string, isKeyDown: boolean, isLocal: boolean) => {
         if (isKeyDown) {
@@ -171,7 +281,7 @@ export function Synthesizer({ channel }) {
             if (isRecording && isLocal) {
                 setRecordedNotes((prevNotes) => [
                     ...prevNotes,
-                    { note, time: Tone.now(), type: 'attack' },
+                    { note, time: Tone.now() - startRecordingTime, type: 'attack' },
                 ]);
             }
         } else {
@@ -180,204 +290,139 @@ export function Synthesizer({ channel }) {
             if (isRecording && isLocal) {
                 setRecordedNotes((prevNotes) => [
                     ...prevNotes,
-                    { note, time: Tone.now(), type: 'release' },
+                    { note, time: Tone.now() - startRecordingTime, type: 'release' },
                 ]);
             }
         }
     };
 
-    const startRecording = () => {
-        setIsRecording(true);
-        setRecordedNotes([]);
+    const slideAnimation = {
+        hidden: { opacity: 0, x: -100 },
+        visible: { opacity: 1, x: 0 },
+    };
+
+    useEffect(() => {
+        const handleOctaveChange = (event: KeyboardEvent) => {
+            if (event.key === "ArrowUp") {
+                Object.keys(keysDown).forEach((note) => {
+                    if (keysDown[note]) {
+                        playNoteWithAbly(note, false);
+                    }
+                });
+                setKeysDown({});
+                setStartOctave((prev) => Math.min(prev + 1, 8));
+            } else if (event.key === "ArrowDown") {
+                Object.keys(keysDown).forEach((note) => {
+                    if (keysDown[note]) {
+                        playNoteWithAbly(note, false);
+                    }
+                });
+                setKeysDown({});
+                setStartOctave((prev) => Math.max(prev - 1, 1));
+            }
+        };
+
+        window.addEventListener("keydown", handleOctaveChange);
+
+        return () => window.removeEventListener("keydown", handleOctaveChange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [keysDown]);
+
+    const handleOctaveChange = (direction: "up" | "down") => {
+        Object.keys(keysDown).forEach((note) => {
+            if (keysDown[note]) {
+                playNoteWithAbly(note, false);
+            }
+        });
+        setKeysDown({});
+        setStartOctave((prev) =>
+            direction === "up" ? Math.min(prev + 1, 8) : Math.max(prev - 1, 1)
+        );
+    };
+
+    const handleInstrumentChange = (value: string) => {
+        setCurrentInstrument(value);
+        // Release all currently pressed keys
+        Object.keys(keysDown).forEach((note) => {
+            if (keysDown[note]) {
+                playNoteWithAbly(note, false);
+            }
+        });
+        setKeysDown({});
     };
 
     const stopRecording = () => {
         setIsRecording(false);
-    };
-
-    const playBackRecording = () => {
-        if (recordedNotes.length === 0) return;
-        setIsPlayingBack(true);
-        const now = Tone.now();
-
-        for (let i = 0; i < recordedNotes.length; i++) {
-            const { note, time, type } = recordedNotes[i];
-            const delay = time - recordedNotes[0].time;
-            if (type === 'attack') {
-                synth.triggerAttack(note, now + delay);
-            } else if (type === 'release') {
-                synth.triggerRelease(note, now + delay);
-            }
-        }
-
-        setTimeout(
-            () => setIsPlayingBack(false),
-            (recordedNotes[recordedNotes.length - 1].time - recordedNotes[0].time) *
-            1000
-        );
-    };
-
-    const visualizeRecording = () => {
-        return (
-
-
-            <div className="flex flex-col mt-4">
-                <div className="flex gap-2">
-                    {recordedNotes.map((record, index) => (
-                        <motion.div
-                            key={index}
-                            className="flex flex-col items-center"
-                            style={{
-                                height: "20px",
-                                width: `${Math.max(20, (recordedNotes[index + 1]?.time - record.time) * 100)}px`,
-                                backgroundColor: record.type === 'attack' ? "#4CAF50" : "#FF5722",
-                                marginBottom: "4px",
-                            }}
-                            initial={{ opacity: 0, x: -50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <span className="text-xs text-white font-bold">
-                                {record.note}
-                            </span>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
+    }
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="w-full flex justify-center -my-6 pb-4">
-                <SynthManager
-                    startRecording={startRecording}
-                    stopRecording={stopRecording}
-                    playBackRecording={playBackRecording}
-                    octave={octave}
-                    setOctave={setOctave}
-                    startOctave={startOctave}
-                    setStartOctave={setStartOctave}
-                    isRecording={isRecording}
-                    isPlayingBack={isPlayingBack}
-                    recordedNotes={recordedNotes}
-                />
-            </div>
-            <div className="flex h-fit flex-row justify-center overflow-x-auto mt-4">
-                {generateNotes(startOctave, octave).map((noteObj) => (
-                    <PianoKey
-                        key={noteObj.note}
-                        note={noteObj.note}
-                        keyName={noteObj.keyName}
-                        playNote={playNoteWithAbly}
-                        keyDown={keysDown[noteObj.note] || false}
+        <div className="h-full flex flex-col items-center gap-4 dark:bg-black/50 p-4 rounded-lg shadow-md backdrop-blur-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="w-full flex justify-center -my-6 py-4">
+                <Label htmlFor="showControls" className="mr-2">
+                    Show Controls
+                </Label>
+                <Switch checked={showControls} onCheckedChange={setShowControls} />
+                {showControls &&
+                    <SynthManager
+                        setShowControls={setShowControls}
+                        playBackRecording={playBackRecording}
+                        startRecording={startRecording}
+                        isRecording={isRecording}
+                        stopRecording={stopRecording}
+                        octave={octave}
+                        setOctave={setOctave}
+                        startOctave={startOctave}
+                        setStartOctave={setStartOctave}
+                        isPlayingBack={isPlayingBack}
+                        recordedNotes={recordedNotes}
+                        playbackProgress={playbackProgress}
                     />
-                ))}
+                }
+            </div>
+            <div className="flex flex-col justify-center items-center my-2 gap-4">
+                <h2 className="text-xl font-bold text-center">Type of Synthesizer</h2>
+                <Select onValueChange={handleInstrumentChange} value={currentInstrument}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select instrument" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {instruments.map((instrument) => (
+                            <SelectItem key={instrument.value} value={instrument.value}>
+                                {instrument.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="flex h-fit flex-row justify-center items-center overflow-x-auto mt-4">
+                <Button onClick={() => handleOctaveChange("down")} className="mr-4 h-6 w-6 bg-primary text-white rounded-full flex items-center justify-center">
+                    ←
+                </Button>
+                <motion.div
+                    className="flex"
+                    initial="hidden"
+                    animate="visible"
+                    variants={slideAnimation}
+                >
+                    {generateNotes(startOctave, octave).map((noteObj) => (
+                        <PianoKey
+                            key={noteObj.note}
+                            note={noteObj.note}
+                            keyName={noteObj.keyName}
+                            playNote={playNoteWithAbly}
+                            keyDown={keysDown[noteObj.note] || false}
+                        />
+                    ))}
+                </motion.div>
+                <Button onClick={() => handleOctaveChange("up")} className="ml-4 h-6 w-6 bg-primary text-white rounded-full flex items-center justify-center">
+                    →
+                </Button>
             </div>
 
-            {visualizeRecording()}
+            <p className="text-neutral-500 text-sm mt-4">
+                Use the keyboard to play notes. Use the arrow keys to change the octave (up/down).
+                <br/>If the note is playing indefinitely, press CTRL / CMD / ALT to release the note.
+            </p>
         </div>
     );
-}
-
-interface SynthControlProps {
-    startRecording: () => void;
-    stopRecording: () => void;
-    playBackRecording: () => void;
-    octave: number;
-    setOctave: (octave: number) => void;
-    startOctave: number;
-    setStartOctave: (startOctave: number) => void;
-    isRecording: boolean;
-    isPlayingBack: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recordedNotes: any[];
-}
-
-export function SynthControls({
-    startRecording,
-    stopRecording,
-    playBackRecording,
-    octave,
-    setOctave,
-    startOctave,
-    setStartOctave,
-    isRecording,
-    isPlayingBack,
-    recordedNotes,
-}: SynthControlProps) {
-    return (
-        <>
-            <div className="min-w-48">
-                <div className="relative top-3.5 h-full">
-                    <div className="flex h-fit max-w-full flex-col p-2">
-                        <div className="flex flex-row justify-center">
-                            <button
-                                onClick={startRecording}
-                                disabled={isRecording || isPlayingBack}
-                                className="mr-2 h-fit rounded border-[1px] px-4 py-2 text-lg border-neutral-800"
-                            >
-                                <div className="size-5 rounded-full bg-red-500"></div>
-                            </button>
-                            <button
-                                onClick={stopRecording}
-                                disabled={!isRecording}
-                                className="mr-2 h-fit rounded border-[1px] px-4 py-2 text-lg border-neutral-800"
-                            >
-                                <div className="size-5 rounded-sm bg-white"></div>
-                            </button>
-                            <button
-                                onClick={playBackRecording}
-                                disabled={
-                                    isRecording || isPlayingBack || recordedNotes.length === 0
-                                }
-                                className="h-fit rounded border-[1px] px-3 py-1.5 text-lg border-neutral-800"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class=" text-white"
-                                >
-                                    <polygon points="5 3 19 12 5 21 5 3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="mt-2 flex w-full flex-row justify-center">
-                            <div className="flex w-full flex-col">
-                                <p className="text-lg">Number of Octaves</p>
-                                <Input
-                                    type="number"
-                                    value={octave}
-                                    onChange={(e) => setOctave(parseInt(e.target.value))}
-                                    min={1}
-                                    max={4}
-                                    className="size-12 w-full text-center"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-2 flex w-full flex-row justify-center">
-                            <div className="flex w-full flex-col">
-                                <p className="text-lg">Start Octave</p>
-                                <Input
-                                    type="number"
-                                    value={startOctave}
-                                    onChange={(e) => setStartOctave(parseInt(e.target.value))}
-                                    min={1}
-                                    max={8}
-                                    className="size-12 w-full text-center"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
 }

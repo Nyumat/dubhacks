@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { cn } from "@/lib/utils";
 import * as Ably from 'ably';
 import React, { useEffect } from "react";
 import * as Tone from "tone";
 import { SequencerMenu } from "./menu";
 import StepRender from "./step-render";
+import { VolumeKnob } from "./volume-knob";
 const NOTE = "C2";
 
 
@@ -93,7 +94,7 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
             seqRef.current?.dispose();
             tracksRef.current.map((trk) => void trk.sampler.dispose());
         };
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sampleState]);
 
     useEffect(() => {
@@ -162,8 +163,10 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
         }
     }, [checkedSteps]);
 
-    const handleBpmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        Tone.Transport.bpm.value = Number(e.target.value);
+    const handleBpmChange = (e: number) => {
+        Tone.Transport.bpm.value = e;
+        // Publish the new BPM value to the channel
+        channel.publish("bpm", { bpm: e });
     };
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +223,8 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
             seqRef.current?.dispose();
             tracksRef.current.map((trk) => void trk.sampler.dispose());
         };
-    }, [samples, numOfSteps]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sampleState]);
 
     const handleClearSessionClick = React.useCallback(async () => {
         try {
@@ -237,6 +241,12 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
 
     return (
         <>
+            <div className="fixed bottom-0 left-0 z-50 w-full p-4 flex justify-between">
+                <div className="flex flex-col items-center">
+                    <span className="text-lg font-bold">BPM</span>
+                    <VolumeKnob min={30} max={200} step={10} onChange={(e) => handleBpmChange(e)} />
+                </div>
+            </div>
             <div className="flex flex-col items-center space-y-4 my-4">
                 <SequencerMenu
                     handleStartClick={handleStartClick}
@@ -300,7 +310,7 @@ interface ControlSequencerProps {
     handleStartClick: () => void;
     handleSaveClick: () => void;
     clearSteps: () => void;
-    handleBpmChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleBpmChange: (e: number) => void;
     handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -334,7 +344,7 @@ function ControlSequencer({ ...props }: ControlSequencerProps) {
                         min={30}
                         max={300}
                         step={1}
-                        onChange={handleBpmChange}
+                        onChange={(e) => handleBpmChange(Number(e.target.value))}
                         defaultValue={120}
                     />
                 </label>

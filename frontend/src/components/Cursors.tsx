@@ -7,6 +7,7 @@ import useTrackCursor from "../hooks/useTrackCursor";
 import { Member } from "../utils/types";
 
 import styles from "../assets/Cursors.module.css";
+import { cn } from "@/lib/utils";
 
 // 💡 This component is used to render the cursor of the user
 const YourCursor = ({
@@ -29,7 +30,7 @@ const YourCursor = ({
 
   return (
     <div
-      className={styles.cursor}
+      className={cn(styles.cursor, "z-50")}
       onMouseMove={(e) => handleSelfCursorMove(e)}
       style={{
         top: `${cursorPosition?.top || 0}px`,

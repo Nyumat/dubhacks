@@ -15,7 +15,7 @@ const useTrackCursor = (
   parentRef: React.RefObject<HTMLDivElement>,
 ) => {
   const { set } = useCursors();
-  let handleSelfCursorMove: (
+  const handleSelfCursorMove: (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
   ) => void = () => {};
 

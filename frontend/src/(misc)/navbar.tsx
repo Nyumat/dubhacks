@@ -19,7 +19,7 @@ export function Navbar() {
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 mx-4">
           <NavLink to="/login">Login</NavLink>
-          <NavLink to="/about">About</NavLink>
+          {/* <NavLink to="/about">About</NavLink> */}
           <NavLink to="/platform">Platform</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>

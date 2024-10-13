@@ -72,7 +72,7 @@ export function Soundboard({ channel }: { channel: any }) {
                             channel={channel!}
                         />
                     )}
-                    <div className="relative flex justify-center w-full">
+                    <div className="relative flex justify-center w-full h-full">
                         {isPianoOpen && (
                             <div className="w-max">
                                 {/* // @ts-ignore */}
