@@ -1,14 +1,20 @@
 import { useState } from "react"
 
 interface VolumeKnobProps {
-    min: number
-    max: number
-    step: number
-    defaultValue: number
-    onChange: (value: number) => void
+    min?: number
+    max?: number
+    step?: number
+    defaultValue?: number
+    onChange?: (value: number) => void
 }
 
-export const VolumeKnob: React.FC<VolumeKnobProps> = ({ min, max, step, defaultValue, onChange }) => {
+export const VolumeKnob = ({ min, max, step, defaultValue, onChange }: VolumeKnobProps) => {
+    min = min || 0
+    max = max || 10
+    step = step || 0.1
+    defaultValue = defaultValue ? defaultValue : Math.random() * (max - min) + min
+    onChange = onChange || (() => { })
+
     const [value, setValue] = useState(defaultValue)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

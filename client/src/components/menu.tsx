@@ -6,7 +6,9 @@ import {
     MenubarShortcut,
     MenubarTrigger,
 } from "@/components/ui/menubar";
-import React from "react";
+import { ClipboardIcon } from "lucide-react";
+import React, { useCallback, useEffect } from "react";
+import { CopyLinkDialog } from "./copy-link";
 
 type props = {
     handleStartClick: () => Promise<void>;
@@ -26,45 +28,50 @@ export function SequencerMenu({
     isLayoutUnlocked,
 }: props) {
     const [isPlaying, setIsPlaying] = React.useState(false);
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-    React.useEffect(() => {
-        const down = (e: KeyboardEvent) => {
-            if (e.key === "p" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                handleStartClick();
-                setIsPlaying((prev) => !prev);
-            }
-            if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                handleSaveClick();
-            }
-            if (e.key === "c" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                clearSteps();
-            }
-            if (e.key === "d" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                handleClearSessionClick();
-            }
-            if (e.key === "t" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                setIsLayoutUnlocked((prev) => !prev);
-            }
-        };
-        document.addEventListener("keydown", down);
-        return () => document.removeEventListener("keydown", down);
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        // Check if the key is already being handled by an input field
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            return;
+        }
 
-    }, [
-        handleStartClick,
-        handleSaveClick,
-        handleClearSessionClick,
-        clearSteps,
-        setIsLayoutUnlocked,
-        isLayoutUnlocked,
-    ]);
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const modifierKey = isMac ? e.metaKey : e.ctrlKey;
 
+        if (modifierKey) {
+            switch (e.key.toLowerCase()) {
+                case 'p':
+                    e.preventDefault();
+                    handleStartClick();
+                    setIsPlaying((prev) => !prev);
+                    break;
+                case 's':
+                    e.preventDefault();
+                    handleSaveClick();
+                    break;
+                case 'c':
+                    e.preventDefault();
+                    clearSteps();
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    handleClearSessionClick();
+                    break;
+                case 't':
+                    e.preventDefault();
+                    setIsLayoutUnlocked((prev) => !prev);
+                    break;
+            }
+        }
+    }, [handleStartClick, handleSaveClick, handleClearSessionClick, clearSteps, setIsLayoutUnlocked, setIsPlaying]);
+
+    useEffect(() => {
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [handleKeyDown]);
     return (
-        <Menubar>
+        <Menubar className="dark:bg-primary/50 bg-primary/40 text-purple-100">
             <MenubarMenu>
                 <MenubarTrigger>Sequencer</MenubarTrigger>
                 <MenubarContent>
@@ -95,6 +102,12 @@ export function SequencerMenu({
                         {`${isLayoutUnlocked ? "Lock" : "Unlock"} Track Layout`}{" "}
                         <MenubarShortcut>⌘  T</MenubarShortcut>
                     </MenubarItem>
+                </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+                <MenubarTrigger>DubJam</MenubarTrigger>
+                <MenubarContent>
+                    <CopyLinkDialog link={window.location.href} />
                 </MenubarContent>
             </MenubarMenu>
         </Menubar>

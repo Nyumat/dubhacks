@@ -39,10 +39,12 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
         if (Tone.Transport.state === "started") {
             Tone.Transport.pause();
             setIsPlaying(false);
+            channel.publish("transport", { action: "pause" });
         } else {
             await Tone.start();
             Tone.Transport.start();
             setIsPlaying(true);
+            channel.publish("transport", { action: "start" });
         }
     };
 
@@ -69,6 +71,26 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
                     } else if (action === "uncheck") {
                         setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
                     }
+                });
+
+                await channel.subscribe("transport", (message) => {
+                    const { action } = message.data;
+                    if (action === "start") {
+                        Tone.Transport.start();
+                        setIsPlaying(true);
+                    } else if (action === "pause") {
+                        Tone.Transport.pause();
+                        setIsPlaying(false);
+                    }
+                });
+
+                await channel.subscribe("clearSteps", () => {
+                    setCheckedSteps([]);
+                    stepsRef.current.forEach((track) => {
+                        track.forEach((step) => {
+                            step.checked = false;
+                        });
+                    });
                 });
 
             } catch (error) {
@@ -123,6 +145,7 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
                 step.checked = false;
             });
         });
+        channel.publish("clearSteps", {});
     };
 
     React.useEffect(() => {

@@ -30,14 +30,10 @@ const Jam = () => {
   const liveCursors = useRef(null);
 
   useEffect(() => {
-    // Create the Ably client and wait for the connection
     const ablyClient = new Ably.Realtime(import.meta.env.VITE_ABLY_KEY);
-
     ablyClient.connection.once('connected', () => {
-      setAbly(ablyClient);  // Set the Ably instance once connected
+      setAbly(ablyClient);
     });
-
-    // Cleanup the Ably connection on unmount
     return () => {
       ablyClient.connection.close();
     };
@@ -45,10 +41,10 @@ const Jam = () => {
 
   useEffect(() => {
     if (ably && space) {
-      space.enter({ name, userColors });  // Enter the space when Ably is ready
+      space.enter({ name, userColors }); 
 
       const newOrFetchedChannel = ably.channels.get(space.name);
-      setChannel(newOrFetchedChannel);  // Set the channel
+      setChannel(newOrFetchedChannel); 
 
     }
   }, [ably, space]);
