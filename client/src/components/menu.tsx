@@ -6,7 +6,6 @@ import {
     MenubarShortcut,
     MenubarTrigger,
 } from "@/components/ui/menubar";
-import { ClipboardIcon } from "lucide-react";
 import React, { useCallback, useEffect } from "react";
 import { CopyLinkDialog } from "./copy-link";
 
@@ -28,7 +27,6 @@ export function SequencerMenu({
     isLayoutUnlocked,
 }: props) {
     const [isPlaying, setIsPlaying] = React.useState(false);
-    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         // Check if the key is already being handled by an input field
@@ -108,6 +106,23 @@ export function SequencerMenu({
                 <MenubarTrigger>DubJam</MenubarTrigger>
                 <MenubarContent>
                     <CopyLinkDialog link={window.location.href} />
+                    <MenubarItem onSelect={() => { }}>
+                        Save and Share <MenubarShortcut>⌘ + S</MenubarShortcut>
+                    </MenubarItem>
+                    <MenubarItem onSelect={() => {
+                        const data = JSON.stringify({
+                            tracks: localStorage.getItem("data"),
+                        });
+                        const blob = new Blob([data], { type: "application/json" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "dubjam-session.json";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }}>
+                        Export <MenubarShortcut>⌘ + E</MenubarShortcut>
+                    </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
         </Menubar>

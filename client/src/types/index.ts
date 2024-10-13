@@ -56,3 +56,8 @@ export interface Category {
   name: string;
   samples: Sample[];
 }
+
+export type TempTrack = {
+  url: string;
+  name: string;
+};

@@ -78,6 +78,21 @@ export default function Landing() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    if (theme === "dark") {
+      setBackgroundImage(`url(${background_dark})`);
+    } else if (theme === "light") {
+      setBackgroundImage(`url(${background_light})`);
+    } else {
+      const isDarkMode = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      setBackgroundImage(
+        `url(${isDarkMode ? background_dark : background_light})`
+      );
+    }
+  }, [theme]);
+
   return (
     <div
       className="flex flex-col min-h-screen"
@@ -163,9 +178,9 @@ export default function Landing() {
             <motion.h2
               className="mx-auto text-3xl max-w-4xl font-bold sm:text-5xl text-center mb-12"
               ref={ref2}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={isInView2 ? { opacity: 1, y: -30 } : {}}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 1 }}
             >
               Sequencing, synthesizing, and sharing music has never been easier.
             </motion.h2>
@@ -241,7 +256,7 @@ export default function Landing() {
                   together.
                 </p>
                 <Button size="lg" className="translate-y-4">
-                  <Link className="text-xl font-medium" to="/login">
+                  <Link className="text-xl font-medium" to="/register">
                     Get started
                   </Link>
                 </Button>

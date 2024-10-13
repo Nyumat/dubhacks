@@ -1,9 +1,12 @@
 import { cn } from "@/lib/utils";
+import { Sample, TempTrack } from "@/types";
 import * as Ably from 'ably';
 import { Reorder } from "framer-motion";
 import { TrashIcon } from "lucide-react";
 import React from "react";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import { TrackActionsDialog } from "./add-sample";
 import { ManageSample } from "./sample-manager";
 import { Input } from "./ui/input";
 import { VolumeKnob } from "./volume-knob";
@@ -40,6 +43,41 @@ export default function StepRender({
     sampleState,
     channel,
 }: Props) {
+
+    const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
+        const formattedAcceptedFiles = acceptedFiles.map((file) => {
+            const url = URL.createObjectURL(file);
+            const name = file.name.split(".");
+            name.pop();
+            return {
+                url,
+                name: name.join(""),
+            };
+        });
+        setTempTrack(formattedAcceptedFiles);
+
+        // Add the track to the track list
+        setTrackIds((prev) => {
+            return [...prev, sampleState.length];
+        });
+
+        // Add the sample to the sample list
+        setSampleState((prev) => {
+            return [...prev, ...formattedAcceptedFiles];
+        });
+    }, []);
+
+    
+
+    const {
+        getRootProps,
+        getInputProps,
+        isFocused,
+        isDragAccept,
+        isDragReject,
+    } = useDropzone({ onDrop, multiple: false, accept: { "audio/wav": [] } });
+
+
     const handleReorder = (newItems: number[]) => {
         if (isLayoutUnlocked) {
             setTrackIds(newItems);
@@ -47,7 +85,7 @@ export default function StepRender({
             toast.error("Unlock the layout to reorder tracks");
         }
     };
-
+    const [tempTrack, setTempTrack] = React.useState<TempTrack[] | null>([]);
     const removeTrack = (index: number) => {
         setCheckedSteps((prev) => {
             return prev.filter((box) => {
@@ -72,6 +110,21 @@ export default function StepRender({
         },
         []
     );
+
+    const addTrack = (sample: Sample) => {
+        const url = new Blob([sample.url]).toString();
+        const name = sample.name;
+        setSampleState((prev) => [...prev, { url, name }]);
+        setTempTrack([]);
+    };
+
+    const handleAddTrack = () => {
+        if (tempTrack === null) return;
+        setSampleState((prev) => [...prev, ...tempTrack]);
+        setTempTrack(null);
+    };
+
+    
 
     return (
 
@@ -185,6 +238,15 @@ export default function StepRender({
                     </Reorder.Item>
                 ))}
             </Reorder.Group>
+            <TrackActionsDialog
+                getRootProps={getRootProps}
+                getInputProps={getInputProps}
+                isDragAccept={isDragAccept}
+                isDragReject={isDragReject}
+                onSampleSave={handleAddTrack}
+                addTrack={addTrack}
+                tempTrack={tempTrack}
+            />
         </div>
     )
 }
