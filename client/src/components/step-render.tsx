@@ -117,9 +117,9 @@ export default function StepRender({
                                     <label
                                         key={id}
                                         className={cn(
-                                            `w-10 h-10 rounded-sm flex items-center justify-center transition-transform duration-75 cursor-default transform bg-purple-200/70 dark:bg-neutral-950/55 ring-2 ring-[#6D28D9] active:scale-90`,
+                                            `w-10 h-10 rounded-sm flex items-center justify-center transition-transform duration-75 cursor-default transform bg-purple-200/70 ring-2 ring-[#6D28D9] active:scale-90`,
                                             {
-                                                "bg-green-500":
+                                                "bg-blue-500 z-50":
                                                     checkedStep,
                                                 "bg-purple-500 scale-110 transition-transform duration-100":
                                                     isCurrentStep,

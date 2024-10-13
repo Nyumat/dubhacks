@@ -3,10 +3,11 @@
 import { Input } from "@/components/ui/input";
 import { keys, notes } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import * as Ably from 'ably';
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import * as Tone from "tone";
-import * as Ably from 'ably';
-
+import { SynthManager } from "./synth-manager";
 
 type Note = {
     note: string;
@@ -45,24 +46,23 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
             className={cn(
                 "relative inline-block",
                 isSharp ? "top-0 w-2 h-16 -ml-3 z-20" : "w-12 h-32"
-            )} // Black keys are skinnier and overlaid between white keys
+            )}
         >
             <button
                 onMouseDown={() => playNote(note, true)}
                 onMouseUp={() => playNote(note, false)}
                 onContextMenu={(e) => {
-                    // This addresses right click indefinite play issue
                     e.preventDefault();
                     playNote(note, false);
                 }}
                 className={`${isSharp
-                    ? "absolute z-20 h-16 w-6 bg-black"
+                    ? "absolute z-20 h-16 w-6 bg-purple-900"
                     : "h-32 w-12 bg-white"
                     } rounded-sm border border-solid 
                     ${isSharp ? "border-black" : "border-neutral-800"} 
                     ${keyDown ? "bg-gray-300" : ""}`}
             >
-                <span className="text-[8px] text-white absolute bottom-1 right-1">{keyName}</span>
+                <span className="text-[8px] text-purple-400 absolute bottom-1 right-1">{keyName}</span>
             </button>
         </div>
     );
@@ -70,7 +70,6 @@ const PianoKey = ({ note, playNote, keyName, keyDown }: PianoKeyProps) => {
 
 
 export function Synthesizer({ channel }: Ably.RealtimeChannel) {
-    //remember to remove setOctave and just display the entire set of keys and octaves as a single scrollable row of keys
     const [octave, setOctave] = useState(3);
     const [startOctave, setStartOctave] = useState(3);
     const [synth, setSynth] = useState(null);
@@ -221,24 +220,28 @@ export function Synthesizer({ channel }: Ably.RealtimeChannel) {
 
     const visualizeRecording = () => {
         return (
+
+
             <div className="flex flex-col mt-4">
-                <h3 className="text-lg mb-2">Recorded Notes:</h3>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex gap-2">
                     {recordedNotes.map((record, index) => (
-                        <div
+                        <motion.div
                             key={index}
                             className="flex flex-col items-center"
                             style={{
-                                width: "20px",
-                                height: `${Math.max(20, (recordedNotes[index + 1]?.time - record.time) * 100)}px`,
+                                height: "20px",
+                                width: `${Math.max(20, (recordedNotes[index + 1]?.time - record.time) * 100)}px`,
                                 backgroundColor: record.type === 'attack' ? "#4CAF50" : "#FF5722",
-                                marginRight: "4px",
+                                marginBottom: "4px",
                             }}
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
                         >
                             <span className="text-xs text-white font-bold">
                                 {record.note}
                             </span>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
@@ -246,21 +249,21 @@ export function Synthesizer({ channel }: Ably.RealtimeChannel) {
     };
 
     return (
-        <div className="flex flex-col items-center bg-background text-white">
-            {/* 
-            <SynthControls {...{
-                startRecording,
-                stopRecording,
-                playBackRecording,
-                octave,
-                setOctave,
-                startOctave,
-                setStartOctave,
-                isRecording,
-                isPlayingBack,
-                recordedNotes,
-            }} />
-            */}
+        <div className="flex flex-col items-center">
+            <div className="w-full flex justify-center -my-6 pb-4">
+                <SynthManager
+                    startRecording={startRecording}
+                    stopRecording={stopRecording}
+                    playBackRecording={playBackRecording}
+                    octave={octave}
+                    setOctave={setOctave}
+                    startOctave={startOctave}
+                    setStartOctave={setStartOctave}
+                    isRecording={isRecording}
+                    isPlayingBack={isPlayingBack}
+                    recordedNotes={recordedNotes}
+                />
+            </div>
             <div className="flex h-fit flex-row justify-center overflow-x-auto mt-4">
                 {generateNotes(startOctave, octave).map((noteObj) => (
                     <PianoKey
@@ -292,7 +295,7 @@ interface SynthControlProps {
     recordedNotes: any[];
 }
 
-function SynthControls({
+export function SynthControls({
     startRecording,
     stopRecording,
     playBackRecording,
