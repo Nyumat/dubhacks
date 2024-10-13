@@ -2,16 +2,27 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from '@/lib/utils';
 import { Music } from "lucide-react";
 import { useTheme } from 'next-themes';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import background_dark from "../assets/Background_dark1.png";
 import background_light from "../assets/Background_light1.png";
 
 export function Navbar() {
-    const { resolvedTheme } = useTheme();
-    const image = resolvedTheme === "dark" ? background_dark : background_light;
+    const { theme } = useTheme();
+    const [backgroundImage, setBackgroundImage] = useState('');
+
+    useEffect(() => {
+        if (theme === 'dark') {
+            setBackgroundImage(`url(${background_dark})`);
+        } else if (theme === 'light') {
+            setBackgroundImage(`url(${background_light})`);
+        } else {
+            const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
+        }
+    }, [theme]);
     return (
-        <header className={cn("sticky top-0 z-50 w-full backdrop-blur-sm bg-background/70 dark:bg-background/70 transition-all duration-300")} style={{ backgroundImage: `url(${image})` }}>
+        <header className={cn("sticky top-0 z-50 w-full backdrop-blur-sm bg-background/70 dark:bg-background/70 transition-all duration-300")} style={{ backgroundImage }}>
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-background to-primary/10 dark:from-primary/20 dark:via-background dark:to-primary/20 opacity-50"></div>
             <div className="relative px-4 lg:px-6 h-14 flex items-center">
                 <Link className="flex items-center justify-center" to="/">

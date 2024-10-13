@@ -1,63 +1,39 @@
-import { Button } from "@/components/ui/button"
+import { useTheme } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { AudioWaveform, Headphones, Layers, Music, Piano, Share2 } from "lucide-react"
-import { Link } from "react-router-dom"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { motion } from 'framer-motion';
+import { AudioWaveform, Headphones, Layers, Music, Piano, Share2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import background_dark from "../../assets/Background_dark1.png";
 import background_light from "../../assets/Background_light1.png";
-import { useEffect, useState } from "react"
-import { useTheme } from "@/components/theme-provider"
 
 export default function Landing() {
-  const { theme } = useTheme();
-  const [backgroundImage, setBackgroundImage] = useState('');
+    const { theme } = useTheme();
+    const [backgroundImage, setBackgroundImage] = useState('');
 
-  useEffect(() => {
-    if (theme === 'dark') {
-      setBackgroundImage(`url(${background_dark})`);
-    } else if (theme === 'light') {
-      setBackgroundImage(`url(${background_light})`);
-    } else {
-      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
-    }
-  }, [theme]);
+    useEffect(() => {
+        if (theme === 'dark') {
+            setBackgroundImage(`url(${background_dark})`);
+        } else if (theme === 'light') {
+            setBackgroundImage(`url(${background_light})`);
+        } else {
+            const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            setBackgroundImage(`url(${isDarkMode ? background_dark : background_light})`);
+        }
+    }, [theme]);
 
     return (
         <div className="flex flex-col min-h-screen">
             <main className="flex-1">
-                <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48" style={{ backgroundImage }}>
-                    <div className="container px-4 md:px-6 mx-auto">
-                        <div className="flex flex-col items-center space-y-4 text-center">
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                                    Make Music Collaboratively
-                                </h1>
-                                <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                                    DubJam is a powerful online music production platform that lets you create, share, and collaborate on music with friends.
-                                </p>
-                            </div>
-                            <div className="space-x-4">
-                                <Button>
-                                  <Link className="text-sm font-medium" to="/register">
-                                    Get started
-                                  </Link>
-                                </Button>
-                                <Button variant="outline">
-                                  <Link className="text-sm font-medium" to="/about">
-                                    Learn more
-                                  </Link>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <HeroSection backgroundImage={backgroundImage} />
                 <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-neutral-800">
                     <div className="container px-4 md:px-6 mx-auto">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12">Key Features</h2>
@@ -179,4 +155,84 @@ export default function Landing() {
             </footer>
         </div>
     )
+}
+
+export function HeroSection({ backgroundImage }: { backgroundImage: string }) {
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.5,
+                delayChildren: 0.8
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5
+            }
+        }
+    };
+
+    return (
+        <section className="min-h-screen w-full py-12 md:py-16 lg:py-24 xl:py-32" style={{ backgroundImage }}>
+            <div className="container px-4 md:px-6 mx-auto">
+                <div className="flex flex-col items-center space-y-4 text-center">
+                    <motion.div
+                        className="space-y-2"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <div className="overflow-hidden">
+                            <motion.h1 className="text-5xl font-bold sm:text-6xl md:text-7xl lg:text-8xl/none mb-2" variants={itemVariants}>
+                                Make Music
+                            </motion.h1>
+                        </div>
+                        <div className="overflow-hidden">
+                            <motion.h1 className="text-5xl font-bold sm:text-6xl md:text-7xl lg:text-8xl/none mb-2" variants={itemVariants}>
+                                Collaboratively
+                            </motion.h1>
+                        </div>
+
+                        <motion.h1 className="text-5xl font-bold sm:text-6xl md:text-7xl lg:text-8xl/none" variants={itemVariants}>
+                            With Anyone.
+                        </motion.h1>
+
+                    </motion.div>
+                    <motion.p
+                        className="mt-10 mx-auto max-w-[700px] text-gray-300 md:text-xl dark:text-gray-400"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 2, duration: 0.5 }}
+                    >
+                        DubJam is a powerful online music production platform that lets you create, share, and collaborate on music with friends.
+                    </motion.p>
+                    <motion.div
+                        className="space-x-4 scale-150"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 2.5, duration: 0.5 }}
+                    >
+                        <Button>
+                            <Link className="text-sm font-medium" to="/register">
+                                Get started
+                            </Link>
+                        </Button>
+                        <Button variant="outline">
+                            <Link className="text-sm font-medium" to="/about">
+                                Learn more
+                            </Link>
+                        </Button>
+                    </motion.div>
+                </div>
+            </div>
+        </section>
+    );
 }
