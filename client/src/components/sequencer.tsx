@@ -2,9 +2,53 @@
 import * as Ably from 'ably';
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as Tone from "tone";
 const NOTE = "C2";
+
+interface VolumeKnobProps {
+  min: number
+  max: number
+  step: number
+  defaultValue: number
+  onChange: (value: number) => void
+}
+
+const VolumeKnob: React.FC<VolumeKnobProps> = ({ min, max, step, defaultValue, onChange }) => {
+  const [value, setValue] = useState(defaultValue)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(e.target.value)
+    setValue(newValue)
+    onChange(newValue)
+  }
+
+  const rotation = ((value - min) / (max - min)) * 270 - 135
+
+  return (
+    <div className="relative w-12 h-12">
+      <input
+        type="range"
+        className="knob absolute w-full h-full opacity-0 cursor-pointer z-10"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={handleChange}
+      />
+      <div 
+        className="knob-control absolute w-full h-full rounded-full border-2 border-primary bg-background flex items-center justify-center"
+        style={{ transform: `rotate(${rotation}deg)` }}
+      >
+        <div className="w-0.5 h-4 bg-primary rounded-full transform -translate-y-1/2"></div>
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {/* <span className="text-lg font-semibold">{value.toFixed(1)}</span> */}
+      </div>
+    </div>
+  )
+}
+
 
 type Track = {
     id: number;
@@ -105,12 +149,10 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
     };
 
     const handleTrackVolumeChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
+        e: number,
         trackId: number
     ) => {
-        tracksRef.current[trackId].volume.volume.value = Tone.gainToDb(
-            Number(e.target.value)
-        );
+        tracksRef.current[trackId].volume.volume.value = Tone.gainToDb(e);
     };
 
     const clearSteps = () => {
@@ -239,14 +281,13 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
                                     })}
                                 </div>
                                 <label className="flex flex-col items-center">
-                                    <input
-                                        type="range"
-                                        className="w-36 rounded-full"
-                                        min={0}
-                                        max={10}
-                                        step={0.1}
-                                        onChange={(e) => handleTrackVolumeChange(e, trackId)}
-                                        defaultValue={5}
+                                    {/* <Label htmlFor="volume-knob">Volume</Label> */}
+                                    <VolumeKnob
+                                      min={0}
+                                      max={10}
+                                      step={0.1}
+                                      defaultValue={5}
+                                      onChange={(e) => handleTrackVolumeChange(e, trackId)}
                                     />
                                 </label>
                             </div>
