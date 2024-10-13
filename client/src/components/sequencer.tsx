@@ -1,53 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import * as Ably from 'ably';
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
+import * as Ably from 'ably';
+import React, { useEffect } from "react";
 import * as Tone from "tone";
+import { SequencerMenu } from "./menu";
+import StepRender from "./step-render";
 const NOTE = "C2";
-
-interface VolumeKnobProps {
-    min: number
-    max: number
-    step: number
-    defaultValue: number
-    onChange: (value: number) => void
-}
-
-const VolumeKnob: React.FC<VolumeKnobProps> = ({ min, max, step, defaultValue, onChange }) => {
-    const [value, setValue] = useState(defaultValue)
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = parseFloat(e.target.value)
-        setValue(newValue)
-        onChange(newValue)
-    }
-
-    const rotation = ((value - min) / (max - min)) * 270 - 135
-
-    return (
-        <div className="relative w-12 h-12">
-            <input
-                type="range"
-                className="knob absolute w-full h-full opacity-0 cursor-pointer z-10"
-                min={min}
-                max={max}
-                step={step}
-                value={value}
-                onChange={handleChange}
-            />
-            <div
-                className="knob-control absolute w-full h-full rounded-full border-2 border-primary bg-background flex items-center justify-center"
-                style={{ transform: `rotate(${rotation}deg)` }}
-            >
-                <div className="w-0.5 h-4 bg-primary rounded-full transform -translate-y-1/2"></div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-                {/* <span className="text-lg font-semibold">{value.toFixed(1)}</span> */}
-            </div>
-        </div>
-    )
-}
 
 
 type Track = {
@@ -64,14 +22,17 @@ type Props = {
 
 export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
     const [isPlaying, setIsPlaying] = React.useState(false);
+    const [isLayoutUnlocked, setIsLayoutUnlocked] = React.useState(false);
     const [checkedSteps, setCheckedSteps] = React.useState([] as string[]);
     const [currentStep, setCurrentStep] = React.useState(0);
-
+    const [sampleState, setSampleState] = React.useState(samples);
     const tracksRef = React.useRef<Track[]>([]);
     const stepsRef = React.useRef<HTMLInputElement[][]>([[]]);
     const lampsRef = React.useRef<HTMLInputElement[]>([]);
     const seqRef = React.useRef<Tone.Sequence | null>(null);
-    const trackIds = [...Array(samples.length).keys()] as const;
+    const [trackIds, setTrackIds] = React.useState([
+        ...Array(samples.length).keys(),
+    ]);
     const stepIds = [...Array(numOfSteps).keys()] as const;
 
     const handleStartClick = async () => {
@@ -96,25 +57,25 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
 
     useEffect(() => {
         const subscribeToChannel = async () => {
-          try {
-            // Subscribe to the channel
-            await channel.subscribe("stepToggle", (message) => {
-              const { trackId, stepId, action } = message.data;
-    
-              // Update checkedSteps state based on the action (check or uncheck)
-              const stepIdString = `${trackId}-${stepId}`;
-              if (action === "check") {
-                  setCheckedSteps((prev) => [...prev, stepIdString]);
-              } else if (action === "uncheck") {
-                  setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
-              }
-            });
-    
+            try {
+                // Subscribe to the channel
+                await channel.subscribe("stepToggle", (message) => {
+                    const { trackId, stepId, action } = message.data;
+
+                    // Update checkedSteps state based on the action (check or uncheck)
+                    const stepIdString = `${trackId}-${stepId}`;
+                    if (action === "check") {
+                        setCheckedSteps((prev) => [...prev, stepIdString]);
+                    } else if (action === "uncheck") {
+                        setCheckedSteps((prev) => prev.filter((step) => step !== stepIdString));
+                    }
+                });
+
             } catch (error) {
-                    console.error("Error subscribing to the channel or fetching data:", error);
+                console.error("Error subscribing to the channel or fetching data:", error);
             }
         };
-    
+
         // Retrieve and parse data from localStorage if it exists
         const data = localStorage.getItem("data");
         if (data) {
@@ -199,9 +160,55 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
         };
     }, [samples, numOfSteps]);
 
+    const handleRename = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        trackId: number
+    ) => {
+        setSampleState((prev) => {
+            const mutatedPrev = [...prev];
+            mutatedPrev[trackId].name = e.target.value;
+            return mutatedPrev;
+        });
+    };
+
+    const removeTrack = (index: number) => {
+        setSampleState((prev) => {
+            const modifiedArr = [...prev];
+            modifiedArr.splice(index, 1);
+            return [...modifiedArr];
+        });
+        setCheckedSteps((prev) => {
+            return prev.filter((box) => {
+                const parsedStringArr = box.split("-");
+                return !parsedStringArr.includes(index.toString());
+            });
+        });
+    };
+
+    const handleClearSessionClick = React.useCallback(async () => {
+        try {
+            localStorage.removeItem("data");
+            alert("Session Cleared");
+            setSampleState(samples);
+            setCheckedSteps([]);
+        } catch (err) {
+            alert("Error clearing session");
+            console.error(err);
+        }
+        // TODO: Maybe remove?
+    }, [samples]);
+
     return (
         <>
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-4 my-4">
+                <SequencerMenu
+                    handleStartClick={handleStartClick}
+                    handleSaveClick={handleSaveClick}
+                    handleClearSessionClick={handleClearSessionClick}
+                    clearSteps={clearSteps}
+                    setIsLayoutUnlocked={setIsLayoutUnlocked}
+                    isLayoutUnlocked={isLayoutUnlocked}
+                />
                 <div className="flex flex-col space-y-2 items-center">
                     <div className="flex flex-row space-x-2">
                         {stepIds.map((stepId) => (
@@ -219,80 +226,21 @@ export function Sequencer({ samples, numOfSteps = 16, channel }: Props) {
                             </label>
                         ))}
                     </div>
-                    <div className="flex flex-col space-y-2">
-                        {trackIds.map((trackId) => (
-                            <div className="flex flex-row gap-2 justify-center align-middle items-center w-full space-y-2">
-                                <p className="w-full whitespace-nowrap text-right mr-2">
-                                    {samples[trackId].name}
-                                </p>
-                                <div
-                                    key={trackId}
-                                    className="flex flex-row space-x-2 w-2/3 mx-auto"
-                                >
-                                    {stepIds.map((stepId, _stepIndex) => {
-                                        const id = trackId + "-" + stepId;
-                                        const checkedStep = checkedSteps.includes(id) ? id : null;
-                                        const isCurrentStep = stepId === currentStep && isPlaying;
-                                        // const shade = stepIndex % 4 === 0 ? 600 : 800;
-                                        // TODO: Figure out why shade not applying
-                                        return (
-                                            <label
-                                                key={id}
-                                                className={cn(
-                                                    `w-12 h-10 rounded-sm flex items-center justify-center bg-neutral-700 transition-colors duration-100 scale-100 hover:scale-110 cursor-pointer`,
-                                                    {
-                                                        "bg-green-500": checkedStep,
-                                                        "bg-purple-500 scale-110 transition-colors duration-100":
-                                                            isCurrentStep,
-                                                        "drop-shadow-[0_0_0.4rem_#a855f7]": isCurrentStep,
-                                                    }
-                                                )}
-                                            >
-                                                <Input
-                                                    key={id}
-                                                    id={id}
-                                                    type="checkbox"
-                                                    className="hidden"
-                                                    ref={(elm) => {
-                                                        if (!elm) return;
-                                                        if (!stepsRef.current[trackId]) {
-                                                            stepsRef.current[trackId] = [];
-                                                        }
-                                                        stepsRef.current[trackId][stepId] = elm;
-                                                    }}
-                                                    onChange={() => {
-                                                        // Data to be sent
-                                                        const messageData = { trackId, stepId }; 
-                                                
-                                                        setCheckedSteps((prev) => {
-                                                            if (prev.includes(id)) {
-                                                                // Publish the step unchecking event
-                                                                channel.publish("stepToggle", { ...messageData, action: "uncheck" });
-                                                                return prev.filter((step) => step !== id);
-                                                            }
-                                                            // Publish the step checking event
-                                                            channel.publish("stepToggle", { ...messageData, action: "check" });
-                                                            return [...prev, id];
-                                                        });
-                                                    }}
-                                                />
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-                                <label className="flex flex-col items-center">
-                                    {/* <Label htmlFor="volume-knob">Volume</Label> */}
-                                    <VolumeKnob
-                                        min={0}
-                                        max={10}
-                                        step={0.1}
-                                        defaultValue={5}
-                                        onChange={(e) => handleTrackVolumeChange(e, trackId)}
-                                    />
-                                </label>
-                            </div>
-                        ))}
-                    </div>
+                    <StepRender {...{
+                        trackIds,
+                        sampleState,
+                        setSampleState,
+                        stepIds,
+                        samples,
+                        checkedSteps,
+                        setCheckedSteps,
+                        stepsRef,
+                        handleTrackVolumeChange,
+                        currentStep,
+                        isPlaying,
+                        isLayoutUnlocked,
+                        setTrackIds,
+                    }} />
                 </div>
                 <ControlSequencer
                     hide={true}

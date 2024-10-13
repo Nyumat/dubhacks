@@ -8,7 +8,7 @@ export interface SoundboardProps {
 }
 
 export function Soundboard({ channel }: SoundboardProps) {
-    const [isSequencerOpen, setIsSequencerOpen] = useState(false);
+    const [isSequencerOpen, setIsSequencerOpen] = useState(true);
     const [isPianoOpen, setIsPianoOpen] = useState(false);
     return (
         <div>
