@@ -35,6 +35,7 @@ export function ActionsTabs({
     setSelectedSample,
     selectedCategory,
     selectedSample,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: any) {
     return (
         <Tabs defaultValue="upload" className="w-full">
@@ -137,7 +138,9 @@ export function ActionsTabs({
 }
 
 interface TrackActionsDialogProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getRootProps: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getInputProps: any;
     isDragAccept: boolean;
     isDragReject: boolean;

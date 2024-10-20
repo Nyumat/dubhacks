@@ -1,23 +1,25 @@
-import { useMemo, useRef, useEffect, useState } from "react";
 import { useMembers, useSpace } from "@ably/spaces/react";
-import { mockNames } from "../utils/mockNames";
-import { colours } from "../utils/helpers";
+import * as Ably from "ably";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MemberCursors, YourCursor } from "../components/Cursors";
+import { colours } from "../utils/helpers";
+// import { mockNames } from "../utils/mockNames";
 import { Soundboard } from "./platform/soundboard";
-import * as Ably from 'ably';
 
 import type { Member } from "../utils/types";
 
+import { useSession } from "@clerk/clerk-react";
 import styles from "../assets/LiveCursors.module.css";
 
 /** 💡 Select a mock name to assign randomly to a new user that enters the space 💡 */
-const mockName = () => mockNames[Math.floor(Math.random() * mockNames.length)];
+// const mockName = () => mockNames[Math.floor(Math.random() * mockNames.length)];
 
 export function Jam() {
-  const [ably, setAbly] = useState<Ably.Realtime | null>(null);  // State to store Ably instance
-  const [channel, setChannel] = useState<Ably.RealtimeChannel | null>(null);  // State to store the Ably channel
-
-  const name = useMemo(mockName, []);
+  const [ably, setAbly] = useState<Ably.Realtime | null>(null); // State to store Ably instance
+  const [channel, setChannel] = useState<Ably.RealtimeChannel | null>(null); // State to store the Ably channel
+  const auth = useSession();
+  const userName = () => auth.session?.user.fullName ?? "Anonymous";
+  const name = useMemo(userName, []);
   /** 💡 Select a color to assign randomly to a new user that enters the space 💡 */
   const userColors = useMemo(
     () => colours[Math.floor(Math.random() * colours.length)],
@@ -31,7 +33,7 @@ export function Jam() {
 
   useEffect(() => {
     const ablyClient = new Ably.Realtime(import.meta.env.VITE_ABLY_KEY);
-    ablyClient.connection.once('connected', () => {
+    ablyClient.connection.once("connected", () => {
       setAbly(ablyClient);
     });
     return () => {
@@ -41,11 +43,10 @@ export function Jam() {
 
   useEffect(() => {
     if (ably && space) {
-      space.enter({ name, userColors }); 
+      space.enter({ name, userColors });
 
       const newOrFetchedChannel = ably.channels.get(space.name);
-      setChannel(newOrFetchedChannel); 
-
+      setChannel(newOrFetchedChannel);
     }
   }, [ably, space]);
 
@@ -60,6 +61,6 @@ export function Jam() {
       <MemberCursors />
     </div>
   );
-};
+}
 
 export default Jam;
